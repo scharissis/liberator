@@ -1,0 +1,12 @@
+{
+  "name": "crawler",
+  "version": "1.0.0",
+  "description": "Crawls github for library data",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "github": "^0.2.2"
+  }
+}
