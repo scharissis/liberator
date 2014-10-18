@@ -1,4 +1,4 @@
-liberator
+Liberator
 =========
 
 Library Analytics &amp; Visualisation
