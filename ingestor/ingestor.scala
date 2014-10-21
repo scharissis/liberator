@@ -17,14 +17,17 @@ object Ingestor {
   def main(args: Array[String]) {
     val conf = new SparkConf().setAppName("Liberator Ingestor")
     val sc = new SparkContext(conf)
-
     val input_file = "test/grunt.json"
+    val output_file = "packages.out"
+
+    // Read file and parse into a Package.
     val source = scala.io.Source.fromFile(input_file)
     val json_file = source.getLines mkString "\n"
     source.close()
     val json = parse(json_file)
     val pkg: Package = json.extract[Package]
-    println(s"Package ${pkg.name} uses:")
-    for (dep <- pkg.dependencies) println(s"\t$dep")
+
+    // Write result to file.
+    scala.tools.nsc.io.File(output_file).writeAll(pkg.name + "," + pkg.dependencies.size + "\n")
   }
 }
