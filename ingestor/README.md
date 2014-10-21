@@ -22,4 +22,11 @@ Build
 
 Run
 ==
+It is presently assumed that all input files are located in folder test: "test/*.json".
+
+To run:
+
 `spark-submit --class "Ingestor" --master local[2] target/scala-2.10/ingestor_2.10-1.0.jar`
+
+The output will be in packages.out/part-*:
+`cat packages.out/part-*`
