@@ -1,8 +1,7 @@
 Ingestor
 =
 Ingests raw JSON files representing repositories, processes this as a graph and
-then outputs pertinent data.
-
+then outputs the number of dependencies for each package.
 
 Dependencies
 ==
@@ -28,5 +27,5 @@ To run:
 
 `spark-submit --class "Ingestor" --master local[2] target/scala-2.10/ingestor_2.10-1.0.jar`
 
-The output will be in packages.out/part-*:
-`cat packages.out/part-*`
+The output will be in output/part-*:
+`cat output/part-*`

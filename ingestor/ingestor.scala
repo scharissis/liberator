@@ -9,6 +9,16 @@ import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
 
 object Ingestor {
+
+  // Transform strings for consistent hashing.
+  def sanitiseString(s: String): String = {
+    s.toLowerCase.replace(" ", "").replace("-", "")
+  }
+
+  // Generate a pseudo-Unique VertexId of type Long.
+  def hash(s: String): Long = { sanitiseString(s).hashCode.toLong }
+
+  // Define a Package format.
   implicit val formats = org.json4s.DefaultFormats
   case class Event(version: String, event: String, time: String, commit: String)
   case class Dependency(name: String, usage: List[Event])
@@ -18,16 +28,13 @@ object Ingestor {
     val conf = new SparkConf().setAppName("Liberator Ingestor")
     val sc = new SparkContext(conf)
     val input_files = "test/*.json"
-    val output_file = "packages.out"
+    val output_file = "output"
 
     // Read & Parse JSON files into Packages.
     val packages: org.apache.spark.rdd.RDD[Package] = sc.wholeTextFiles(input_files)
       .map(json  =>  { parse(json._2) })
       .map(json  =>  { json.extract[Package] })
       .cache
-
-    // Generate a pseudo-Unique VertexId of type Long.
-    def hash(s: String): Long = {s.toLowerCase.replace(" ", "").replace("-", "").hashCode.toLong}
 
     // Generate Vertex RDD.
     val vertices: VertexRDD[String] = VertexRDD(
