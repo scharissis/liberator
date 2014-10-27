@@ -20,12 +20,45 @@ object Ingestor {
     val input_files = "test/*.json"
     val output_file = "packages.out"
 
-    // Read & Parse JSON files.
-    val json_rdd = sc.wholeTextFiles(input_files)
-    val pkg: org.apache.spark.rdd.RDD[String] = json_rdd.map(
-      json => { parse(json._2) }).map( json => { json.extract[Package] }).map(p => {p.name + "," + p.dependencies.size})
+    // Read & Parse JSON files into Packages.
+    val packages: org.apache.spark.rdd.RDD[Package] = sc.wholeTextFiles(input_files)
+      .map(json  =>  { parse(json._2) })
+      .map(json  =>  { json.extract[Package] })
+      .cache
+
+    // Generate a pseudo-Unique VertexId of type Long.
+    def hash(s: String): Long = {s.toLowerCase.replace(" ", "").replace("-", "").hashCode.toLong}
+
+    // Generate Vertex RDD.
+    val vertices: VertexRDD[String] = VertexRDD(
+      packages.flatMap(p => { p.dependencies.map( d => { (hash(d.name), d.name)}) })
+        .union(packages.map(p => { (hash(p.name), p.name) }))
+        .distinct
+    )
+
+    // Generate Edge RDD.
+    // Define: connection(a,b) => 'a is a dependency of b'.
+    val edges: org.apache.spark.rdd.RDD[Edge[String]] = packages
+      .flatMap(p => { p.dependencies.map( d => {Edge(hash(p.name), hash(d.name), "dep")}) })
+
+    // Build the initial Graph.
+    val graph: Graph[String, String] = Graph(vertices, edges)
+
+    // Obtain dependency subgraph.
+    val subgraph = graph.subgraph(
+      //vpred = (verexId,vd) => vd == "grunt",
+      epred = e => e.attr == "dep"
+    ).cache()
+
+    // Get the inDegree RDD.
+    val gDegrees = subgraph.inDegrees
+
+    // Translate vertexId's back to String's.
+    val result = subgraph.vertices.innerJoin(gDegrees){
+      (vid, vd, o) => (vd, o)
+    }.map( x => x._2 ).filter{ x => x._1 != "null"}
 
     // Write result to file.
-    pkg.saveAsTextFile(output_file)
+    result.saveAsTextFile(output_file)
   }
 }
