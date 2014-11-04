@@ -22,7 +22,7 @@ object Ingestor {
   implicit val formats = org.json4s.DefaultFormats
   case class Event(version: String, event: String, time: String, commit: String)
   case class Dependency(name: String, usage: List[Event])
-  case class Package(name: String, dependencies: List[Dependency])
+  case class Package(name: String, source: String, dependencies: List[Dependency])
 
   def main(args: Array[String]) {
     val conf = new SparkConf().setAppName("Liberator Ingestor")
