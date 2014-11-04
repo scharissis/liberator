@@ -111,7 +111,6 @@ repos = [
 ]
 
 # Won't work until throttling is implemented
-# crawl_requests = repos.map (repo) -> new RepoCrawlRequest 'github', repo
+crawl_requests = repos.map (repo) -> new RepoCrawlRequest 'github', repo
 
-crawl_requests = [new RepoCrawlRequest 'github', 'facebook/react']
 crawler.crawl crawl_request for crawl_request in crawl_requests
