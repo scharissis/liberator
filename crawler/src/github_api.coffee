@@ -12,6 +12,6 @@ if !github_api_token
 else
   githubApi.authenticate
     type: 'oauth',
-    token: 'aab8fba3dfa8abb9ae6c1a06f796b57978e4e503'
+    token: github_api_token
 
 module.exports = cogithub githubApi;
