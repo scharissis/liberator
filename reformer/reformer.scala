@@ -10,18 +10,22 @@ import org.apache.spark.rdd.RDD
 // Converts NodeJS 'package.json' files into Liberator Packages.
 // TODO: Group by library (merge all revisions of each lib).
 // TODO: Determine real Events.
-// TODO: Determine source (eg. 'Github').
+// TODO: Merge outputs by package.
 object Reformer {
   // Define a Package format.
   implicit lazy val formats = org.json4s.DefaultFormats
   case class Event(version: String, event: String, time: String, commit: String)
   case class Dependency(name: String, usage: List[Event])
-  case class Package(name: String, source: Option[String], dependencies: List[Dependency])
+  case class Package(name: String, source: String, dependencies: List[Dependency])
 
   def node2package(nodeFile: (String,String)) : Package = {
     val parsed_file : org.json4s.JValue = parse(nodeFile._2)
 
     val name = (parsed_file \ "name").extract[String]
+    val source = (parsed_file \ "source") match {
+      case JNothing => "unknown"
+      case default => default.extract[String]
+    }
     val devdeps : Map[String,String] = ( parsed_file \ "devDependencies" ) match {
       case JNothing => Map()
       case default => default.extract[Map[String,String]]
@@ -35,7 +39,7 @@ object Reformer {
         Dependency(dep._1, List(Event(dep._2, "add", "1415152149489", "fab1e2afbbff3c7c454946bbddc2648d8a673d04" )))
       }
     ).toList
-    return Package(name, Option("github"), dependencies)
+    return Package(name, source, dependencies)
   }
 
   def main(args: Array[String]) {
