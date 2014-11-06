@@ -9,7 +9,6 @@ import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
 
 object Ingestor {
-
   // Transform strings for consistent hashing.
   def sanitiseString(s: String): String = {
     s.toLowerCase.replace(" ", "").replace("-", "")
