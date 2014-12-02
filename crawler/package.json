@@ -7,11 +7,12 @@
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "dependencies": {
-    "co": "^3.1.0",
-    "co-fs": "^1.2.0",
-    "co-fs-plus": "^0.3.1",
-    "co-github": "^1.0.0",
-    "github": "^0.2.2",
-    "winston": "^0.8.1"
+    "async": "^0.9",
+    "co": "^4.0",
+    "co-fs": "^1.2",
+    "co-fs-plus": "^0.3",
+    "co-github": "^1.0",
+    "github": "^0.2",
+    "winston": "^0.8"
   }
 }
