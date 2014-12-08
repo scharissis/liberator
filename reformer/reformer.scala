@@ -1,5 +1,6 @@
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
+import sun.misc.BASE64Decoder
 
 import org.apache.spark.SparkContext
 import org.apache.spark.SparkContext._
@@ -7,9 +8,8 @@ import org.apache.spark.SparkConf
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
 
-// Converts NodeJS 'package.json' files into Liberator Packages.
-// TODO: Group by library (merge all revisions of each lib).
-// TODO: Determine real Events.
+// Converts NodeJS 'package.json' files into Liberator Packages (aka. RepDep files).
+// TODO: Correct timestamps & commits.
 // TODO: Merge outputs by package.
 object Reformer {
   // Define a Package format.
@@ -18,42 +18,135 @@ object Reformer {
   case class Dependency(name: String, usage: List[Event])
   case class Package(name: String, source: String, dependencies: List[Dependency])
 
-  def node2package(nodeFile: (String,String)) : Package = {
-    val parsed_file : org.json4s.JValue = parse(nodeFile._2)
+  def decodeBase64(data: String) : String = {
+    val bytes = new sun.misc.BASE64Decoder().decodeBuffer(data)
+    return bytes.map(_.toChar).mkString
+  }
 
-    val name = (parsed_file \ "name").extract[String]
-    val source = (parsed_file \ "source") match {
+  def node2package(fromFile: String, toFile: String) : Package = {
+    val parsedFromFile : org.json4s.JValue = parse(fromFile)
+    val parsedToFile : org.json4s.JValue = parse(toFile)
+
+    val name = (parsedToFile \ "name").extract[String]
+    val url = (parsedToFile \ "url").extract[String]
+
+    val decodedContentFrom : String = decodeBase64(
+      ( parsedFromFile \ "content" ) match {
+        case JNothing => "Failed to decode content."
+        case default => default.extract[String]
+      }
+    )
+    val decodedContentTo : String = decodeBase64(
+      ( parsedToFile \ "content" ) match {
+        case JNothing => "Failed to decode content."
+        case default => default.extract[String]
+      }
+    )
+
+    var parsedPackageFrom: org.json4s.JValue = org.json4s.JNothing
+    try{
+      parsedPackageFrom = parse(decodedContentFrom)
+    } catch { // Bad JSON
+      case e: Exception => println("Warning: Failed to parse content of " + url + ":\n" + e)
+      return Package("ERROR","", List[Reformer.Dependency]())
+    }
+    var parsedPackageTo: org.json4s.JValue = org.json4s.JNothing
+    try{
+      parsedPackageTo = parse(decodedContentTo)
+    } catch { // Bad JSON
+      case e: Exception => println("Warning: Failed to parse content of " + name + ":\n" + e)
+      return Package("ERROR","", List[Reformer.Dependency]())
+    }
+
+    // Dependencies are of the form: 'gruntjs': '0.4.2'
+    val devDepsFrom : Map[String,String] = ( parsedPackageFrom \ "devDependencies" ) match {
+      case JNothing => Map()
+      case default => default.extract[Map[String,String]]
+    }
+    val depsFrom : Map[String,String] = ( parsedPackageFrom \ "dependencies" ) match {
+      case JNothing => Map()
+      case default => default.extract[Map[String,String]]
+    }
+    val devDepsTo : Map[String,String] = ( parsedPackageTo \ "devDependencies" ) match {
+      case JNothing => Map()
+      case default => default.extract[Map[String,String]]
+    }
+    val depsTo : Map[String,String] = ( parsedPackageTo \ "dependencies" ) match {
+      case JNothing => Map()
+      case default => default.extract[Map[String,String]]
+    }
+
+    val allDepsFrom : Map[String,String] = (devDepsFrom ++ depsFrom)
+    val allDepsTo : Map[String,String] = (devDepsTo ++ depsTo)
+    val depFromkeys : Set[String] = allDepsFrom.keySet
+    val depTokeys : Set[String] = allDepsTo.keySet
+
+    val newDeps : List[Dependency] = depTokeys.diff(depFromkeys)
+      .map( dep => (dep, allDepsTo.get(dep)) )  // name => (name,version)
+      .map{ p => (p._1, p._2.getOrElse("")) } // (String,Option[String]) => (String,String)
+      .map{
+        case (name,version) =>   // (dep) = (name,version) => Dependency()
+          Dependency(name, List(Event(version, "new", "1415152149489", "fab1e2afbbff3c7c454946bbddc2648d8a673d04" )))
+      }.toList
+
+    val removedDeps : List[Dependency] = depFromkeys.diff(depTokeys)
+      .map( dep => (dep, allDepsFrom.get(dep)) )  // name => (name,version)
+      .map{ p => (p._1, p._2.getOrElse("")) } // (String,Option[String]) => (String,String)
+      .map{
+        case (name,version) =>   // (dep) = (name,version) => Dependency()
+          Dependency(name, List(Event(version, "removed", "1415152149489", "fab1e2afbbff3c7c454946bbddc2648d8a673d04" )))
+      }.toList
+
+    var updatedDeps : List[Dependency] = List[Dependency]()
+    allDepsFrom.foreach {
+      case (name,version) =>
+        if (allDepsTo.contains(name)) {
+          updatedDeps = Dependency(name, List(Event(version, "updated", "1415152149489", "fab1e2afbbff3c7c454946bbddc2648d8a673d04" ))) :: updatedDeps
+        }
+    }
+
+    val source = (parsedPackageFrom \ "source") match {
       case JNothing => "unknown"
       case default => default.extract[String]
     }
-    val devdeps : Map[String,String] = ( parsed_file \ "devDependencies" ) match {
-      case JNothing => Map()
-      case default => default.extract[Map[String,String]]
-    }
-    val deps : Map[String,String] = ( parsed_file \ "dependencies" ) match {
-      case JNothing => Map()
-      case default => default.extract[Map[String,String]]
-    }
-    val dependencies : List[Dependency] = (devdeps ++ deps).map(
-        (dep) => {  // (dep) = (name,version)
-        Dependency(dep._1, List(Event(dep._2, "add", "1415152149489", "fab1e2afbbff3c7c454946bbddc2648d8a673d04" )))
-      }
-    ).toList
-    return Package(name, source, dependencies)
+
+    return Package(name, source, newDeps++removedDeps++updatedDeps)
+  }
+
+  // Input: (.../facebook/react/package_1391185509000_bff9731b66093239dc0408fb1d83df423925b6f9.json, <data>)
+  // Output: (jade, (1415567992, 2314090c37c2a3ff5c5ae62c77cb6680201475fa, <data>))
+  // TODO: The key (first String) should be more unique (hash of company+repo?), as we groupBy it.
+  def splitPath(pair: (String, String)): (String, (String, String, String)) = {
+    val pathList = pair._1.split('/')
+    val repoName = pathList(pathList.size-2)
+    val fileList = pathList.last.split('_')
+    val timestamp = fileList(1)
+    val commit = fileList(2).split('.').head
+    return (repoName, (timestamp, commit, pair._2))
   }
 
   def main(args: Array[String]) {
     val conf = new SparkConf().setAppName("Liberator Reformer")
     val sc = new SparkContext(conf)
-    val input_files = "test/*.json"
+    val input_files = "../crawler/tmp/repos/raw/github/g*/*/package_133*.json"
     val output_file = "output"
 
     // Read & Parse JSON files into NodeJS Packages.
-    val json_packages: org.apache.spark.rdd.RDD[String] = sc.wholeTextFiles(input_files)
-      .map(node2package)
-      .map( m => pretty(render(Extraction.decompose(m))) )
+    val nodefiles: org.apache.spark.rdd.RDD[(String,Iterable[(String,String,String)])] = sc.wholeTextFiles(input_files)
+      .map(p => splitPath(p))
+      .groupByKey()
 
-    // Write result to file.
-    json_packages.saveAsTextFile(output_file)
+    val packages: org.apache.spark.rdd.RDD[(String,Iterable[(String,String,Package)])] = nodefiles
+      .map{ case (quad) => // (name, (timestamp, commit, data))
+        (quad._1, quad._2.zip(quad._2.tail).map{
+          case (prev,cur) => (cur._1, cur._2, node2package(prev._3,cur._3))
+        })
+      }
+
+    packages.map{ case (pname, iterable) => iterable.map{
+      case (timestamp, commit, pack) => pack
+    }}
+    .map( m => pretty(render(Extraction.decompose(m))) )  // To JSON
+    .saveAsTextFile(output_file)
   }
 }

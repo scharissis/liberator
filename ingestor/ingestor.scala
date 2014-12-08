@@ -8,6 +8,8 @@ import org.apache.spark._
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
 
+// Input: Files containing Lists of RepDep files.
+// Output: Files containing number of dependencies per package.
 object Ingestor {
   // Transform strings for consistent hashing.
   def sanitiseString(s: String): String = {
@@ -26,13 +28,16 @@ object Ingestor {
   def main(args: Array[String]) {
     val conf = new SparkConf().setAppName("Liberator Ingestor")
     val sc = new SparkContext(conf)
-    val input_files = "test/*.json"
+    val input_files = "../reformer/output/part-*"
     val output_file = "output"
 
     // Read & Parse JSON files into Packages.
+    // TODO: Ignore empty files needed?
     val packages: org.apache.spark.rdd.RDD[Package] = sc.wholeTextFiles(input_files)
-      .map(json  =>  { parse(json._2) })
-      .map(json  =>  { json.extract[Package] })
+      .filter{ case (filename,filecontent) => filecontent != "" } // Skip empty files.
+      .map(json  =>  { parse(json._2) })                          // Discard filename.
+      .map(json  =>  json.extract[ List[Package] ])
+      .flatMap(identity)
       .cache
 
     // Generate Vertex RDD.
