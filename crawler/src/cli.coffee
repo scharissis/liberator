@@ -1,12 +1,12 @@
+async = require 'async'
 log = require './log'
 RepoCrawlRequest = require './repo_crawl_request'
 GithubCrawler = require './github_crawler'
 LocalFileSystem = require './local_file_system'
 
-
-output_file_system = new LocalFileSystem('./tmp')
-crawler = new GithubCrawler(output_file_system)
-
+# Configurable params - will be externalised at some point
+output_dir = './tmp'
+max_concurrent_crawls = 1
 repos = [
   # "adam-p/markdown-here",
   # "addyosmani/backbone-fundamentals",
@@ -110,6 +110,15 @@ repos = [
   # "xing/wysihtml5"
 ]
 
-crawl_requests = repos.map (repo) -> new RepoCrawlRequest 'github', repo
 
-crawler.crawl crawl_request for crawl_request in crawl_requests
+
+crawl_repo = (repo_crawl_request, callback) ->
+  crawler.crawl repo_crawl_request
+  callback
+
+output_file_system = new LocalFileSystem(output_dir)
+crawler = new GithubCrawler(output_file_system)
+crawl_requests = repos.map (repo) -> new RepoCrawlRequest 'github', repo
+crawl_queue = async.queue(crawl_repo, max_concurrent_crawls)
+crawl_queue.push(crawl_requests)
+# crawler.crawl crawl_request for crawl_request in crawl_requests
