@@ -110,7 +110,7 @@ object Reformer {
     var updatedDeps : List[Dependency] = List[Dependency]()
     allDepsFrom.foreach {
       case (name,version) =>
-        if (allDepsTo.contains(name)) {
+        if ( allDepsTo.contains(name) && allDepsFrom.get(name) != allDepsTo.get(name) ) {
           updatedDeps = Dependency(name, List(Event(version, "updated", timestamp, commit ))) :: updatedDeps
         }
     }
