@@ -23,9 +23,20 @@ object Reformer {
     return bytes.map(_.toChar).mkString
   }
 
-  def node2package(fromFile: String, toFile: String) : Package = {
+  // cur/prev: (timestamp, commit, data)
+  def node2package( prev: (String,String,String), cur: (String,String,String)) : Package = {
+    val timestamp = cur._1
+    val commit = cur._2
+    val fromFile = prev._3
+    val toFile = cur._3
+
     val parsedFromFile : org.json4s.JValue = parse(fromFile)
     val parsedToFile : org.json4s.JValue = parse(toFile)
+
+    val source = (parsedFromFile \ "source") match {
+      case JNothing => "unknown"
+      case default => default.extract[String]
+    }
 
     val name = (parsedToFile \ "name").extract[String]
     val url = (parsedToFile \ "url").extract[String]
@@ -86,7 +97,7 @@ object Reformer {
       .map{ p => (p._1, p._2.getOrElse("")) } // (String,Option[String]) => (String,String)
       .map{
         case (name,version) =>   // (dep) = (name,version) => Dependency()
-          Dependency(name, List(Event(version, "new", "1415152149489", "fab1e2afbbff3c7c454946bbddc2648d8a673d04" )))
+          Dependency(name, List(Event(version, "new", timestamp, commit )))
       }.toList
 
     val removedDeps : List[Dependency] = depFromkeys.diff(depTokeys)
@@ -94,20 +105,15 @@ object Reformer {
       .map{ p => (p._1, p._2.getOrElse("")) } // (String,Option[String]) => (String,String)
       .map{
         case (name,version) =>   // (dep) = (name,version) => Dependency()
-          Dependency(name, List(Event(version, "removed", "1415152149489", "fab1e2afbbff3c7c454946bbddc2648d8a673d04" )))
+          Dependency(name, List(Event(version, "removed", timestamp, commit )))
       }.toList
 
     var updatedDeps : List[Dependency] = List[Dependency]()
     allDepsFrom.foreach {
       case (name,version) =>
         if (allDepsTo.contains(name)) {
-          updatedDeps = Dependency(name, List(Event(version, "updated", "1415152149489", "fab1e2afbbff3c7c454946bbddc2648d8a673d04" ))) :: updatedDeps
+          updatedDeps = Dependency(name, List(Event(version, "updated", timestamp, commit ))) :: updatedDeps
         }
-    }
-
-    val source = (parsedPackageFrom \ "source") match {
-      case JNothing => "unknown"
-      case default => default.extract[String]
     }
 
     return Package(name, source, newDeps++removedDeps++updatedDeps)
@@ -122,13 +128,14 @@ object Reformer {
     val fileList = pathList.last.split('_')
     val timestamp = fileList(1)
     val commit = fileList(2).split('.').head
-    return (repoName, (timestamp, commit, pair._2))
+    val data = pair._2
+    return (repoName, (timestamp, commit, data))
   }
 
   def main(args: Array[String]) {
     val conf = new SparkConf().setAppName("Liberator Reformer")
     val sc = new SparkContext(conf)
-    val input_files = "../crawler/tmp/repos/raw/github/g*/*/package_133*.json"
+    val input_files = "../crawler/tmp/repos/raw/github/*/*/package_*.json"
     val output_file = "output"
 
     // Read & Parse JSON files into NodeJS Packages.
@@ -136,17 +143,18 @@ object Reformer {
       .map(p => splitPath(p))
       .groupByKey()
 
-    val packages: org.apache.spark.rdd.RDD[(String,Iterable[(String,String,Package)])] = nodefiles
-      .map{ case (quad) => // (name, (timestamp, commit, data))
+    val packages: org.apache.spark.rdd.RDD[(String,Iterable[Package])] = nodefiles
+      .map{ case (quad) => // (repo-name, Iterable(timestamp, commit, data))
         (quad._1, quad._2.zip(quad._2.tail).map{
-          case (prev,cur) => (cur._1, cur._2, node2package(prev._3,cur._3))
+          case (prev,cur) => node2package(prev,cur)
         })
       }
 
-    packages.map{ case (pname, iterable) => iterable.map{
-      case (timestamp, commit, pack) => pack
-    }}
-    .map( m => pretty(render(Extraction.decompose(m))) )  // To JSON
-    .saveAsTextFile(output_file)
+    packages
+      .map{ case (pname, iterable) => iterable.map{
+        case (pack) => pack
+      }}
+      .map( m => pretty(render(Extraction.decompose(m))) )  // To JSON
+      .saveAsTextFile(output_file)
   }
 }
