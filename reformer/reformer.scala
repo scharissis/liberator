@@ -38,7 +38,6 @@ object Reformer {
       case default => default.extract[String]
     }
 
-    val name = (parsedToFile \ "name").extract[String]
     val url = (parsedToFile \ "url").extract[String]
 
     val decodedContentFrom : String = decodeBase64(
@@ -65,7 +64,7 @@ object Reformer {
     try{
       parsedPackageTo = parse(decodedContentTo)
     } catch { // Bad JSON
-      case e: Exception => println("Warning: Failed to parse content of " + name + ":\n" + e)
+      case e: Exception => println("Warning: Failed to parse content of " + url + ":\n" + e)
       return Package("ERROR","", List[Reformer.Dependency]())
     }
 
@@ -114,6 +113,11 @@ object Reformer {
         if (allDepsTo.contains(name)) {
           updatedDeps = Dependency(name, List(Event(version, "updated", timestamp, commit ))) :: updatedDeps
         }
+    }
+
+    val name = (parsedPackageFrom \ "name") match {
+      case JNothing => "unknown"
+      case default => default.extract[String]
     }
 
     return Package(name, source, newDeps++removedDeps++updatedDeps)
