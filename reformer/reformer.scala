@@ -9,8 +9,8 @@ import org.apache.spark._
 import org.apache.spark.rdd.RDD
 
 // Converts NodeJS 'package.json' files into Liberator Packages (aka. RepDep files).
-// TODO: Correct timestamps & commits.
-// TODO: Merge outputs by package.
+// TODO: Does not produce any deps if there is only 1 package.json.
+// TODO: Merge outputs by package?
 object Reformer {
   // Define a Package format.
   implicit lazy val formats = org.json4s.DefaultFormats
@@ -139,7 +139,8 @@ object Reformer {
   def main(args: Array[String]) {
     val conf = new SparkConf().setAppName("Liberator Reformer")
     val sc = new SparkContext(conf)
-    val input_files = "../crawler/tmp/repos/raw/github/*/*/package_*.json"
+    val repo_source = "../crawler/tmp/repos/raw/github"
+    val input_files = repo_source + "/*/*/package_*.json"
     val output_file = "output"
 
     // Read & Parse JSON files into NodeJS Packages.

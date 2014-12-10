@@ -10,6 +10,7 @@ import org.apache.spark.rdd.RDD
 
 // Input: Files containing Lists of RepDep files.
 // Output: Files containing number of dependencies per package.
+// TODO: Add timestamp to graph edges.
 object Ingestor {
   // Transform strings for consistent hashing.
   def sanitiseString(s: String): String = {
