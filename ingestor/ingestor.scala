@@ -10,7 +10,7 @@ import org.apache.spark.rdd.RDD
 
 // Input: Files containing Lists of RepDep files.
 // Output: Files containing number of dependencies per package.
-// TODO: Add timestamp to graph edges.
+// TODO: Add timestamp to graph edges and output accordingly.
 object Ingestor {
   // Transform strings for consistent hashing.
   def sanitiseString(s: String): String = {
@@ -49,11 +49,11 @@ object Ingestor {
     )
 
     // Generate Edge RDD.
-    // Define: connection(a,b) => 'a is a dependency of b'.
+    // Define: connection(a,b) => 'b is a dependency of a'.
     val edges: org.apache.spark.rdd.RDD[Edge[String]] = packages
       .flatMap(p => { p.dependencies.map( d => {Edge(hash(p.name), hash(d.name), "dep")}) })
 
-    // Build the initial Graph.
+    // Build a directed multi-Graph.
     val graph: Graph[String, String] = Graph(vertices, edges)
 
     // Obtain dependency subgraph.

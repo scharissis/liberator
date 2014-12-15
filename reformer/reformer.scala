@@ -24,7 +24,7 @@ object Reformer {
   }
 
   // cur/prev: (timestamp, commit, data)
-  def node2package( prev: (String,String,String), cur: (String,String,String)) : Package = {
+  def node2package( prev: (String,String,String), cur: (String,String,String), index: Int) : List[Package] = {
     val timestamp = cur._1
     val commit = cur._2
     val fromFile = prev._3
@@ -58,14 +58,14 @@ object Reformer {
       parsedPackageFrom = parse(decodedContentFrom)
     } catch { // Bad JSON
       case e: Exception => println("Warning: Failed to parse content of " + url + ":\n" + e)
-      return Package("ERROR","", List[Reformer.Dependency]())
+      return List(Package("ERROR","", List[Reformer.Dependency]()))
     }
     var parsedPackageTo: org.json4s.JValue = org.json4s.JNothing
     try{
       parsedPackageTo = parse(decodedContentTo)
     } catch { // Bad JSON
       case e: Exception => println("Warning: Failed to parse content of " + url + ":\n" + e)
-      return Package("ERROR","", List[Reformer.Dependency]())
+      return List(Package("ERROR","", List[Reformer.Dependency]()))
     }
 
     // Dependencies are of the form: 'gruntjs': '0.4.2'
@@ -120,7 +120,21 @@ object Reformer {
       case default => default.extract[String]
     }
 
-    return Package(name, source, newDeps++removedDeps++updatedDeps)
+    val packages: List[Package] = List( Package(name, source, newDeps++removedDeps++updatedDeps) )
+
+    if (index == 0) {
+      val prevTimestamp = prev._1
+      val prevCommit = prev._2
+      val firstPackage = List(Package(name,source,
+        allDepsFrom.map{
+          case (name,version) =>   // (dep) = (name,version) => Dependency()
+            Dependency(name, List(Event(version, "new", prevTimestamp, prevCommit )))
+        }.toList
+      ))
+      return firstPackage ++ packages
+    }
+
+    return packages
   }
 
   // Input: (.../facebook/react/package_1391185509000_bff9731b66093239dc0408fb1d83df423925b6f9.json, <data>)
@@ -150,8 +164,8 @@ object Reformer {
 
     val packages: org.apache.spark.rdd.RDD[(String,Iterable[Package])] = nodefiles
       .map{ case (quad) => // (repo-name, Iterable(timestamp, commit, data))
-        (quad._1, quad._2.zip(quad._2.tail).map{
-          case (prev,cur) => node2package(prev,cur)
+        (quad._1, quad._2.zip(quad._2.tail).zipWithIndex.flatMap{
+          case ((prev,cur), index) => node2package(prev, cur, index)
         })
       }
 
