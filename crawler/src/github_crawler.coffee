@@ -17,7 +17,7 @@ module.exports = class GithubCrawler
       ]
     .then(
       (val) -> log.info("Crawl of #{repo_crawl_request} complete")
-      (err) -> log.error("Error crawling #{repo_crawl_request}:", err)
+      (err) -> log.error("Error crawling #{repo_crawl_request}:", err, err.stack)
     )
 
 
@@ -40,24 +40,6 @@ module.exports = class GithubCrawler
     yield(@crawl_file_commit(github_repo, file_path, commit) for commit in commits)
 
 
-  crawl_file_commit: (github_repo, file_path, commit) ->
-    sha = commit.sha
-    log.debug("Retrieving content for #{github_repo.user}/#{github_repo.repo}/#{file_path}##{sha}")
-    timestamp = Date.parse commit.commit.committer.date
-    file_dirname = path.dirname(file_path)
-    file_extension = path.extname(file_path)
-    file_basename = path.basename(file_path, file_extension)
-    output_path = "/repos/raw/github/#{github_repo.user}/#{github_repo.repo}/#{file_dirname}/#{file_basename}_#{timestamp}_#{commit.sha}#{file_extension}"
-    file_content = yield github_api.repos.getContent
-      user: github_repo.user
-      repo: github_repo.repo
-      path: file_path
-      ref: sha
-
-    yield @write_json_file(output_path, file_content)
-    log.debug("Content for #{github_repo.user}/#{github_repo.repo}/#{file_path}##{sha} written to #{output_path}")
-
-
   commits_for_file: (github_repo, file_path) ->
     log.debug("Retrieving commit history for #{github_repo.user}/#{github_repo.repo}/#{file_path}")
     commits = yield github_api.repos.getCommits
@@ -71,6 +53,36 @@ module.exports = class GithubCrawler
     return commits
 
 
+  crawl_file_commit: (github_repo, file_path, commit) ->
+    sha = commit.sha
+    log.debug("Retrieving content for #{github_repo.user}/#{github_repo.repo}/#{file_path}##{sha}")
+    timestamp = Date.parse commit.commit.committer.date
+    file_dirname = path.dirname(file_path)
+    file_extension = path.extname(file_path)
+    file_basename = path.basename(file_path, file_extension)
+    output_path = "/repos/raw/github/#{github_repo.user}/#{github_repo.repo}/#{file_dirname}/#{file_basename}_#{timestamp}_#{commit.sha}#{file_extension}"
+    file_content = yield @crawl_file_contents(github_repo, file_path, sha)
+    yield @write_json_file(output_path, file_content)
+    log.debug("Content for #{github_repo.user}/#{github_repo.repo}/#{file_path}##{sha} written to #{output_path}")
+
+
+  crawl_file_contents: (github_repo, file_path, sha) ->
+    co ->
+      return yield github_api.repos.getContent
+        user: github_repo.user
+        repo: github_repo.repo
+        path: file_path
+        ref: sha
+    .then(
+      (val) -> return val
+      (err) ->
+        if err.code == 404
+          log.debug("File #{github_repo.user}/#{github_repo.repo}/#{file_path}##{sha} was deleted")
+          return null
+        else
+          throw err
+    )
+
   parse_github_repo: (repo) ->
     [user, repo] = repo.split '/'
     return {
@@ -80,5 +92,8 @@ module.exports = class GithubCrawler
 
 
   write_json_file: (file_path, content) ->
-    content_to_write = if @pretty_json then JSON.stringify(content, null, 2) else JSON.stringify(content)
+    if content
+      content_to_write = if @pretty_json then JSON.stringify(content, null, 2) else JSON.stringify(content)
+    else
+      content_to_write = ""
     @output_file_system.write_file file_path, content_to_write
