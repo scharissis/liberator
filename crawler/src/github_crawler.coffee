@@ -37,19 +37,28 @@ module.exports = class GithubCrawler
   crawl_file_history: (github_repo, file_path) ->
     log.debug("Crawling #{github_repo.user}/#{github_repo.repo}/#{file_path}")
     commits = yield @commits_for_file(github_repo, file_path)
+    # TODO probably want to limit simultaneous retrievals a bit here to avoid too many open connections?
     yield(@crawl_file_commit(github_repo, file_path, commit) for commit in commits)
 
 
   commits_for_file: (github_repo, file_path) ->
-    log.debug("Retrieving commit history for #{github_repo.user}/#{github_repo.repo}/#{file_path}")
-    commits = yield github_api.repos.getCommits
-      user: github_repo.user
-      repo: github_repo.repo
-      path: file_path
-      per_page: 100
+    page = 1
+    page_size = 100
+    commits = []
+    loop
+      log.debug("Retrieving commit history page #{page} for #{github_repo.user}/#{github_repo.repo}/#{file_path}")
+      paged_commits = yield github_api.repos.getCommits
+        user: github_repo.user
+        repo: github_repo.repo
+        path: file_path
+        page: page
+        per_page: page_size
 
-    # TODO pagination
-    log.debug("Commit history for #{github_repo.user}/#{github_repo.repo}/#{file_path} retrieved")
+      commits = commits.concat(paged_commits)
+      break if paged_commits.length < page_size
+      page++
+
+    log.debug("Commit history for #{github_repo.user}/#{github_repo.repo}/#{file_path} retrieved #{commits.length} commits")
     return commits
 
 
