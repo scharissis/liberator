@@ -70,9 +70,12 @@ module.exports = class GithubCrawler
     file_extension = path.extname(file_path)
     file_basename = path.basename(file_path, file_extension)
     output_path = "/repos/raw/github/#{github_repo.user}/#{github_repo.repo}/#{file_dirname}/#{file_basename}_#{timestamp}_#{commit.sha}#{file_extension}"
-    file_content = yield @crawl_file_contents(github_repo, file_path, sha)
-    yield @write_json_file(output_path, file_content)
-    log.debug("Content for #{github_repo.user}/#{github_repo.repo}/#{file_path}##{sha} written to #{output_path}")
+    if not yield @output_file_system.exists(output_path)
+      file_content = yield @crawl_file_contents(github_repo, file_path, sha)
+      yield @write_json_file(output_path, file_content)
+      log.debug("Content for #{github_repo.user}/#{github_repo.repo}/#{file_path}##{sha} written to #{output_path}")
+    else
+      log.debug("File #{github_repo.user}/#{github_repo.repo}/#{file_path}##{sha} already retrieved")
 
 
   crawl_file_contents: (github_repo, file_path, sha) ->

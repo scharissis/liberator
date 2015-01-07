@@ -10,3 +10,7 @@ module.exports = class LocalFileSystem
     output_path = path.resolve(path.join(@base_dir, filename))
     yield mkdirp path.dirname(output_path)
     yield fs.writeFile(output_path, data)
+
+  exists: (filename) ->
+    full_path = path.resolve(path.join(@base_dir, filename))
+    yield fs.exists(full_path)

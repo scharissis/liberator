@@ -121,4 +121,3 @@ crawler = new GithubCrawler(output_file_system)
 crawl_requests = repos.map (repo) -> new RepoCrawlRequest 'github', repo
 crawl_queue = async.queue(crawl_repo, max_concurrent_crawls)
 crawl_queue.push(crawl_requests)
-# crawler.crawl crawl_request for crawl_request in crawl_requests
