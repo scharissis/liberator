@@ -6,6 +6,10 @@ mkdirp = require('co-fs-plus').mkdirp
 module.exports = class LocalFileSystem
   constructor: (@base_dir) ->
 
+  read_file: (filename) ->
+    full_path = path.resolve(path.join(@base_dir, filename))
+    yield fs.readFile full_path, 'utf8'
+
   write_file: (filename, data) ->
     output_path = path.resolve(path.join(@base_dir, filename))
     yield mkdirp path.dirname(output_path)

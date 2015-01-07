@@ -24,10 +24,20 @@ module.exports = class GithubCrawler
   crawl_repository_info: (github_repo) ->
     github_repo_str = "#{github_repo.user}/#{github_repo.repo}"
     output_file = "/repos/raw/github/#{github_repo.user}/#{github_repo.repo}/repository.json"
+    existing_etag = yield @extract_etag_from_file(output_file)
+    request_params =
+      user: github_repo.user
+      repo: github_repo.repo
+      headers:
+        "If-None-Match": existing_etag
+
     log.debug("Crawling repository info for #{github_repo_str}")
-    repo_info = yield github_api.repos.get(github_repo)
-    yield @write_json_file(output_file, repo_info)
-    log.debug("Repository info for #{github_repo_str} written to #{output_file}")
+    repo_info = yield github_api.repos.get request_params
+    if repo_info.meta.status.indexOf("304") == 0
+      log.debug("Repository info for #{github_repo_str} already crawled and is unchanged")
+    else
+      yield @write_json_file(output_file, repo_info)
+      log.debug("Repository info for #{github_repo_str} written to #{output_file}")
 
 
   crawl_dependency_files: (github_repo) ->
@@ -95,6 +105,7 @@ module.exports = class GithubCrawler
           throw err
     )
 
+
   parse_github_repo: (repo) ->
     [user, repo] = repo.split '/'
     return {
@@ -109,3 +120,15 @@ module.exports = class GithubCrawler
     else
       content_to_write = ""
     @output_file_system.write_file file_path, content_to_write
+
+
+  extract_etag_from_file: (file_path) ->
+    co =>
+      file_content = yield @output_file_system.read_file(file_path)
+    .then(
+      (val) ->
+        file_json = JSON.parse val
+        return file_json.meta.etag
+      (err) ->
+        return null
+    )
