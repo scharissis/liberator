@@ -100,7 +100,7 @@ module.exports = class GithubCrawler
       (err) ->
         if err.code == 404
           log.debug("File #{github_repo.user}/#{github_repo.repo}/#{file_path}##{sha} was deleted")
-          return null
+          return "{}"
         else
           throw err
     )
