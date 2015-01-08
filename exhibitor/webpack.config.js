@@ -12,6 +12,7 @@ module.exports = {
     filename: '[name]_bundle_[hash].js'
   },
   resolve: {
+    modulesDirectories: ['src', 'node_modules'],
     extensions: ['', '.js', '.cjsx', '.coffee']
   },
   module: {
@@ -22,5 +23,7 @@ module.exports = {
   },
   plugins: [
     new HtmlWebpackPlugin()
-  ]
+  ],
+  devtool: 'source-map',
+  cache: true
 };
