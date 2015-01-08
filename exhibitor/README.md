@@ -6,6 +6,6 @@ The end user UI.
 # Running
 
 ```bash
-$ node server/index.js
+$ coffee server/index.js
 $ open http://localhost:3000
 ```
