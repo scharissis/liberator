@@ -1,15 +1,18 @@
 var path = require('path');
+var webpack = require('webpack');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 
 var DIST_DIR = 'dist';
 
 module.exports = {
-  entry: {
-    app: path.join(__dirname, 'src/web/app.cjsx')
-  },
+  entry: [
+    'webpack-dev-server/client?http://localhost:3000',
+    'webpack/hot/dev-server',
+    path.join(__dirname, 'src/web/app.cjsx')
+  ],
   output: {
     path: path.join(__dirname, DIST_DIR),
-    filename: '[name]_bundle_[hash].js'
+    filename: 'app_[hash].js'
   },
   resolve: {
     modulesDirectories: ['src', 'node_modules'],
@@ -17,12 +20,14 @@ module.exports = {
   },
   module: {
     loaders: [
-      { test: /\.cjsx$/, loaders: ['coffee', 'cjsx']},
+      { test: /\.cjsx$/, loaders: ['react-hot', 'coffee', 'cjsx']},
       { test: /\.coffee$/, loader: 'coffee' }
     ],
   },
   plugins: [
-    new HtmlWebpackPlugin()
+    new HtmlWebpackPlugin(),
+    new webpack.HotModuleReplacementPlugin(),
+    new webpack.NoErrorsPlugin()
   ],
   devtool: 'source-map',
   cache: true
