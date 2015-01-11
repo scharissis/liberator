@@ -9,7 +9,7 @@ import org.apache.spark._
 import org.apache.spark.rdd.RDD
 
 // Converts NodeJS 'package.json' files into Liberator Packages (aka. RepDep files).
-// TODO: Does not produce any deps if there is only 1 package.json.
+// TODO: Does not produce any deps if there is only one input package.json.
 // TODO: Merge outputs by package?
 object Reformer {
   // Define a Package format.
@@ -37,9 +37,10 @@ object Reformer {
       case JNothing => "unknown"
       case default => default.extract[String]
     }
-
-    val url = (parsedToFile \ "url").extract[String]
-
+    var url = "failed-to-parse-url"
+    scala.util.control.Exception.ignoring(classOf[Exception]) { // Ignore ALL Exceptions!
+      url = (parsedToFile \ "url").extract[String]
+    }
     val decodedContentFrom : String = decodeBase64(
       ( parsedFromFile \ "content" ) match {
         case JNothing => "Failed to decode content."
@@ -71,18 +72,22 @@ object Reformer {
     // Dependencies are of the form: 'gruntjs': '0.4.2'
     val devDepsFrom : Map[String,String] = ( parsedPackageFrom \ "devDependencies" ) match {
       case JNothing => Map()
+      case JArray(List()) => Map()  // TODO: Properly handle this naughty file.
       case default => default.extract[Map[String,String]]
     }
     val depsFrom : Map[String,String] = ( parsedPackageFrom \ "dependencies" ) match {
       case JNothing => Map()
+      case JArray(List()) => Map()  // TODO: Properly handle this naughty file.
       case default => default.extract[Map[String,String]]
     }
     val devDepsTo : Map[String,String] = ( parsedPackageTo \ "devDependencies" ) match {
       case JNothing => Map()
+      case JArray(List()) => Map()  // TODO: Properly handle this naughty file.
       case default => default.extract[Map[String,String]]
     }
     val depsTo : Map[String,String] = ( parsedPackageTo \ "dependencies" ) match {
       case JNothing => Map()
+      case JArray(List()) => Map()  // TODO: Properly handle this naughty file.
       case default => default.extract[Map[String,String]]
     }
 
@@ -133,7 +138,6 @@ object Reformer {
       ))
       return firstPackage ++ packages
     }
-
     return packages
   }
 
