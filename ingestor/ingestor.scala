@@ -8,10 +8,20 @@ import org.apache.spark._
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
 
+import java.sql.{Connection, DriverManager, ResultSet}
+import scalikejdbc._
+
 // Input: Files containing Lists of RepDep files.
 // Output: Files containing number of dependencies per package.
 // TODO: Add timestamp to graph edges and output accordingly.
 object Ingestor {
+  Class.forName("org.postgresql.Driver")
+  val db_name="liberator_test"
+  val db_url = "localhost:5432"
+  val db_jdbc = "jdbc:postgresql://"+ db_url + "/" + db_name
+  val db_username = "liberator"
+  val db_password = "liberator"
+
   // Transform strings for consistent hashing.
   def sanitiseString(s: String): String = {
     s.toLowerCase.replace(" ", "").replace("-", "")
@@ -72,5 +82,21 @@ object Ingestor {
 
     // Write result to file.
     result.saveAsTextFile(output_file)
+
+    // Write result to DB.
+    result.foreachPartition { (partition) =>
+      partition.foreach { case (name, count) =>
+        using (DB (DriverManager .getConnection (db_jdbc, db_username, db_password))) {db =>
+          db.localTx { implicit session =>
+            sql"""
+             insert into liberator_nodejs (package_id, usage_date, usage_count)
+             values (${name}, current_timestamp, ${count})
+             """
+             .update.apply()
+          }
+        }
+      }
+    }
+
   }
 }
