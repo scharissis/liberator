@@ -16,6 +16,7 @@
     "winston": "^0.8"
   },
   "devDependencies": {
+    "bootstrap": "^3.3.1",
     "cjsx-loader": "^1.1.0",
     "coffee-loader": "^0.7.2",
     "coffee-script": "git://github.com/jashkenas/coffeescript",
@@ -27,6 +28,7 @@
     "jshint-loader": "^0.8.0",
     "nodemon": "^1.2.1",
     "react": "^0.12.2",
+    "react-bootstrap": "^0.13.0",
     "react-hot-loader": "^1.0.7",
     "react-router": "^0.11.6",
     "style-loader": "^0.8.2",

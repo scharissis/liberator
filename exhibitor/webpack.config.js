@@ -8,11 +8,11 @@ module.exports = {
   entry: [
     'webpack-dev-server/client?http://localhost:3001',
     'webpack/hot/dev-server',
-    path.join(__dirname, 'src/web/app.cjsx')
+    path.join(__dirname, 'src/web/index.cjsx')
   ],
   output: {
     path: path.join(__dirname, DIST_DIR),
-    filename: 'app_[hash].js'
+    filename: 'bundle_[hash].js'
   },
   resolve: {
     modulesDirectories: ['src', 'node_modules'],
@@ -21,7 +21,12 @@ module.exports = {
   module: {
     loaders: [
       { test: /\.cjsx$/, loaders: ['react-hot', 'coffee', 'cjsx']},
-      { test: /\.coffee$/, loader: 'coffee' }
+      { test: /\.coffee$/, loader: 'coffee' },
+      { test: /\.css$/, loaders: ['style', 'css']},
+      { test: /\.svg$/, loader: 'url-loader?prefix=images/&limit=10000&mimetype=image/svg+xml' },
+      { test: /\.woff$/, loader: 'url-loader?prefix=fonts/&limit=10000&mimetype=application/font-woff' },
+      { test: /\.eot$/, loader: 'url-loader?prefix=fonts/&limit=10000&mimetype=application/vnd.ms-fontobject' },
+      { test: /\.ttf$/, loader: 'url-loader?prefix=fonts/&limit=10000&mimetype=application/octet-stream' }
     ],
   },
   plugins: [

@@ -2,11 +2,11 @@ React = require 'react'
 Router = require 'react-router'
 Route = Router.Route
 
-Main = require 'web/main'
+App = require 'web/app'
 HomePage = require 'web/home_page'
 
 module.exports = (
-  <Route handler={Main}>
+  <Route handler={App}>
     <Route name="home" handler={HomePage} path="/" />
   </Route>
 )

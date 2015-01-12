@@ -1,10 +1,13 @@
 React = require 'react'
 Router = require 'react-router'
+Link = Router.Link
+RouteHandler = Router.RouteHandler
 
-# React dev tools looks for this
-window.React = React
+require 'web/vendor/bootstrap'
 
-Routes = require 'web/routes'
-
-Router.run Routes, Router.HistoryLocation, (Handler) ->
-  React.render <Handler/>, document.body
+module.exports = React.createClass
+  render: ->
+    <div>
+      <header><Link to="home">Home</Link></header>
+      <RouteHandler/>
+    </div>
