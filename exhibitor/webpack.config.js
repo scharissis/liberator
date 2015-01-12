@@ -6,7 +6,7 @@ var DIST_DIR = 'dist';
 
 module.exports = {
   entry: [
-    'webpack-dev-server/client?http://localhost:3000',
+    'webpack-dev-server/client?http://localhost:3001',
     'webpack/hot/dev-server',
     path.join(__dirname, 'src/web/app.cjsx')
   ],
