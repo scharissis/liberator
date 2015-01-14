@@ -157,7 +157,7 @@ object Reformer {
   def main(args: Array[String]) {
     val conf = new SparkConf().setAppName("Liberator Reformer")
     val sc = new SparkContext(conf)
-    val repo_source = "../crawler/tmp/repos/raw/github"
+    val repo_source = "../crawler/output/repos/raw/github"
     val input_files = repo_source + "/*/*/package_*.json"
     val output_file = "output"
 
