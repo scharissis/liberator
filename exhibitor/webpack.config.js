@@ -20,8 +20,8 @@ module.exports = {
   },
   module: {
     loaders: [
-      { test: /\.cjsx$/, loaders: ['react-hot', 'coffee', 'cjsx']},
-      { test: /\.coffee$/, loader: 'coffee' },
+      { test: /\.cjsx$/, loaders: ['react-hot', '6to5', 'coffee', 'cjsx']},
+      { test: /\.coffee$/, loaders: ['6to5', 'coffee'] },
       { test: /\.css$/, loaders: ['style', 'css']},
       { test: /\.svg$/, loader: 'url-loader?prefix=images/&limit=10000&mimetype=image/svg+xml' },
       { test: /\.woff$/, loader: 'url-loader?prefix=fonts/&limit=10000&mimetype=application/font-woff' },

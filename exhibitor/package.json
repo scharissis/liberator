@@ -11,11 +11,14 @@
   },
   "dependencies": {
     "body-parser": "^1.10.1",
+    "co": "^4.1.0",
     "dotenv": "^0.4.0",
     "express": "^4.10.7",
     "winston": "^0.8"
   },
   "devDependencies": {
+    "6to5": "^2.12.0",
+    "6to5-loader": "^2.0.0",
     "bootstrap": "^3.3.1",
     "c3": "^0.4.8",
     "cjsx-loader": "^1.1.0",
@@ -26,11 +29,15 @@
     "file-loader": "^0.8.1",
     "html-webpack-plugin": "^1.1.0",
     "nodemon": "^1.2.1",
+    "promise": "^6.0.1",
     "react": "^0.12.2",
     "react-bootstrap": "^0.13.0",
     "react-hot-loader": "^1.0.7",
     "react-router": "^0.11.6",
+    "regenerator": "^0.8.5",
     "style-loader": "^0.8.2",
+    "superagent": "^0.21.0",
+    "superagent-promise": "^0.2.0",
     "url-loader": "^0.5.5",
     "webpack": "^1.4.15",
     "webpack-dev-server": "^1.7.0"

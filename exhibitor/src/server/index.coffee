@@ -34,8 +34,14 @@ if config.hotReload
 
 app.use express.static(path.join(__dirname, '../../dist'))
 
-app.get '/', (req, res) ->
-  res.json "success": true
+app.get '/api/libraries', (req, res) ->
+  data =
+    columns: [
+      ['npm/react', 30, 200, 100, 400, 150, 250, 30, 200, 100, 400, 150, 250],
+      ['npm/grunt', 50, 20, 10, 40, 15, 25, 50, 20, 10, 40, 15, 25]
+    ]
+
+  res.json "data": data
 
 server = app.listen 3000, ->
   log.info 'Static app running on http://localhost:%d', server.address().port
