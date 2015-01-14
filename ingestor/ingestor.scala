@@ -8,6 +8,7 @@ import org.apache.spark._
 import org.apache.spark.graphx._
 import org.apache.spark.rdd.RDD
 
+import com.github.nscala_time.time.Imports._
 import java.sql.{Connection, DriverManager, ResultSet}
 import scalikejdbc._
 
@@ -41,6 +42,7 @@ object Ingestor {
     val sc = new SparkContext(conf)
     val input_files = "../reformer/output/part-*"
     val output_file = "output"
+    val targetDate = DateTime.yesterday.withTimeAtStartOfDay()
 
     // Read & Parse JSON files into Packages.
     // TODO: Ignore empty files needed?
@@ -60,8 +62,11 @@ object Ingestor {
 
     // Generate Edge RDD.
     // Define: connection(a,b) => 'b is a dependency of a'.
-    val edges: org.apache.spark.rdd.RDD[Edge[String]] = packages
-      .flatMap(p => { p.dependencies.map( d => {Edge(hash(p.name), hash(d.name), "dep")}) })
+    val edges: org.apache.spark.rdd.RDD[Edge[String]] = for {
+        pac <- packages
+        dep <- pac.dependencies
+        event <- dep.usage
+    } yield { Edge(hash(pac.name), hash(dep.name), event.time ) }
 
     // Build a directed multi-Graph.
     val graph: Graph[String, String] = Graph(vertices, edges)
@@ -69,7 +74,8 @@ object Ingestor {
     // Obtain dependency subgraph.
     val subgraph = graph.subgraph(
       //vpred = (verexId,vd) => vd == "grunt",
-      epred = e => e.attr == "dep"
+      epred = e =>
+        (e.attr.toLong >= targetDate.getMillis() && e.attr.toLong <= (targetDate + 1.days).getMillis())
     ).cache()
 
     // Get the inDegree RDD.
@@ -97,6 +103,6 @@ object Ingestor {
         }
       }
     }
-
+    println("Completed ingestion for date: " + DateTimeFormat.forPattern("MM/dd/yyyy").print(targetDate))
   }
 }
