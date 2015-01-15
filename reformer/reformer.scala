@@ -148,7 +148,7 @@ object Reformer {
     val pathList = pair._1.split('/')
     val repoName = pathList(pathList.size-2)
     val fileList = pathList.last.split('_')
-    val timestamp = fileList(1)
+    val timestamp = (fileList(1).toLong/1000).toString
     val commit = fileList(2).split('.').head
     val data = pair._2
     return (repoName, (timestamp, commit, data))
