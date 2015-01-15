@@ -36,25 +36,39 @@ if config.hotReload
 app.use express.static(path.join(__dirname, '../../dist'))
 
 
-generateDummyData = (lib) ->
-  values = _.transform [1..100], (result, i) ->
+date_to_string = (date) ->
+  date.toISOString().slice(0, 10)
+
+generate_dummy_data = (lib) ->
+  num_days = 100
+  max_usage = 200
+  per_day_variability = 20
+
+  millis_per_day = 24*60*60*1000
+  current_date_millis = new Date().getTime()
+  start_date = current_date_millis - (200*millis_per_day)
+  dates = _.transform [1..num_days], (result, i) ->
+    result.push date_to_string(new Date(start_date + ((i-1)*millis_per_day)))
+
+  values = _.transform [1..num_days], (result, i) ->
     if !result.length
-      result.push _.random(200)
+      result.push _.random(max_usage)
     else
-      result.push _.last(result) + _.random(-20, 20)
+      result.push _.max([0, _.last(result) + _.random(-per_day_variability, per_day_variability)])
 
-  _.flatten [lib, values]
+  { dates: dates, values: values }
 
+fetch_library = (lib) ->
+  # Will eventually be a real database fetch
+  {
+    id: lib,
+    usage: generate_dummy_data(lib)
+  }
 
 app.get '/api/libraries', (req, res) ->
   libs = []
   libs.push(req.query.id)
-  columns = (generateDummyData(lib) for lib in _.flatten(libs))
-  data =
-    columns: columns
-
-  console.log(JSON.stringify(data))
-  res.json "data": data
+  res.json (fetch_library(lib) for lib in _.flatten(libs))
 
 server = app.listen 3000, ->
   log.info 'Static app running on http://localhost:%d', server.address().port
