@@ -103,6 +103,6 @@ object Ingestor {
         }
       }
     }
-    println("Completed ingestion for date: " + DateTimeFormat.forPattern("MM/dd/yyyy").print(targetDate))
+    println("Completed ingestion for date: " + DateTimeFormat.forPattern("yyyy-MM-dd").print(targetDate))
   }
 }
