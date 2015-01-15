@@ -1,4 +1,5 @@
 path = require 'path'
+_ = require 'lodash'
 express = require 'express'
 bodyParser = require 'body-parser'
 cors = require 'cors'
@@ -34,13 +35,25 @@ if config.hotReload
 
 app.use express.static(path.join(__dirname, '../../dist'))
 
-app.get '/api/libraries', (req, res) ->
-  data =
-    columns: [
-      ['npm/react', 30, 200, 100, 400, 150, 250, 30, 200, 100, 400, 150, 250],
-      ['npm/grunt', 50, 20, 10, 40, 15, 25, 50, 20, 10, 40, 15, 25]
-    ]
 
+generateDummyData = (lib) ->
+  values = _.transform [1..100], (result, i) ->
+    if !result.length
+      result.push _.random(200)
+    else
+      result.push _.last(result) + _.random(-20, 20)
+
+  _.flatten [lib, values]
+
+
+app.get '/api/libraries', (req, res) ->
+  libs = []
+  libs.push(req.query.id)
+  columns = (generateDummyData(lib) for lib in _.flatten(libs))
+  data =
+    columns: columns
+
+  console.log(JSON.stringify(data))
   res.json "data": data
 
 server = app.listen 3000, ->
