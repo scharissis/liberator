@@ -1,4 +1,5 @@
-require 'regenerator/runtime'
+require 'script!regenerator/runtime'
+
 React = require 'react'
 Router = require 'react-router'
 
