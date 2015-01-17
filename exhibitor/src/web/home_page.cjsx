@@ -15,8 +15,10 @@ module.exports =  React.createClass
     }
 
   render: ->
-    <div id="home-page">
-      <h1>Liberator</h1>
+    <div id="home-page" className="container">
+      <div className="page-header">
+        <h1>Liberator <small>Language package usage</small></h1>
+      </div>
       <SearchBar></SearchBar>
       <UsageGraph libraries={this.state.libraries}></UsageGraph>
     </div>

@@ -42,6 +42,7 @@ module.exports =  React.createClass
             type: 'timeseries',
             tick:
               format: '%Y-%m-%d'
+              count: 5
         point:
           show: false
 

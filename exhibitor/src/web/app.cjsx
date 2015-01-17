@@ -8,6 +8,5 @@ require 'web/vendor/bootstrap'
 module.exports = React.createClass
   render: ->
     <div>
-      <header><Link to="home">Home</Link></header>
       <RouteHandler/>
     </div>

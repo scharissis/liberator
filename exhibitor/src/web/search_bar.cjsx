@@ -16,6 +16,6 @@ module.exports = React.createClass
       <Input
         type="text"
         placeholder="npm/react, npm/angular"
-        label="Node (NPM) libraries, comma separated"
-        ref="search" />
+        ref="search"
+        className="input-lg" />
     </form>
