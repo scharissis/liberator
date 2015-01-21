@@ -7,7 +7,7 @@ LocalFileSystem = require './local_file_system'
 
 # Configurable params - will be externalised at some point
 output_dir = './output'
-max_concurrent_crawls = 1
+max_concurrent_crawls = 5
 repos = [
   "adam-p/markdown-here",
   "addyosmani/backbone-fundamentals",

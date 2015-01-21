@@ -1,4 +1,5 @@
 _ = require 'lodash'
+async = require 'async'
 GitHubApi = require 'github'
 log = require './log'
 
@@ -51,6 +52,13 @@ wrap_github_api = (github) ->
   return wrappedApis
 
 
+process_api_call = (api_call, cb) ->
+  api_call.api_function.apply(this, api_call.args)
+  cb()
+
+
+api_call_queue = async.queue(process_api_call, max_concurrent_requests)
+
 # Handles github api call result to respond to rate limiting
 handle_api_result = (cb) ->
   (err, res) ->
@@ -61,9 +69,8 @@ handle_api_result = (cb) ->
 call_github_api = (api, args...) ->
   return (cb) ->
     # TODO fail fast if rate limited
-    # TODO throttle concurrent requests
     args.push handle_api_result(cb)
-    api.apply(this, args)
+    api_call_queue.push({api_function: api, args: args})
 
 
 module.exports = wrap_github_api(create_github_api());

@@ -47,7 +47,6 @@ module.exports = class GithubCrawler
   crawl_file_history: (github_repo, file_path) ->
     log.debug("Crawling #{github_repo.user}/#{github_repo.repo}/#{file_path}")
     commits = yield @commits_for_file(github_repo, file_path)
-    # TODO probably want to limit simultaneous retrievals a bit here to avoid too many open connections?
     yield(@crawl_file_commit(github_repo, file_path, commit) for commit in commits)
 
 
