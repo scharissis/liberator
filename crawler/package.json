@@ -11,7 +11,6 @@
     "co": "^4.0",
     "co-fs": "^1.2",
     "co-fs-plus": "^0.3",
-    "co-github": "^1.0",
     "github": "^0.2",
     "lodash": "^2.4.1",
     "winston": "^0.8"
