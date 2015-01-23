@@ -71,6 +71,19 @@ object Ingestor {
     // Build a directed multi-Graph.
     val graph: Graph[String, String] = Graph(vertices, edges)
 
+    // Neo4J Debug Graph
+    // TODO: Enable with a '--debug' flag of some sort.
+    // Vertices/Nodes
+    // Format: :ID,:LABEL,name
+    graph.vertices
+      .map{ case (id, name) => Array(id, "package", name).mkString(",") }
+      .saveAsTextFile("test/debug/output/packages.csv")
+    // Edges/Relationships
+    // Format: :START_ID,:END_ID,:TYPE
+    graph.triplets
+      .map( triplet => Array(hash(triplet.srcAttr), hash(triplet.dstAttr), "dep").mkString(",") )
+      .saveAsTextFile("test/debug/output/dependencies.csv")
+
     // Obtain dependency subgraph.
     val subgraph = graph.subgraph(
       //vpred = (verexId,vd) => vd == "grunt",
