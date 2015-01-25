@@ -92,8 +92,13 @@ object Ingestor {
         (e.attr.toLong >= targetDate.getMillis()/1000 && e.attr.toLong <= (targetDate + 1.days).getMillis()/1000)
     ).cache()
 
-    // Get the inDegree RDD, then translate vertexId's back to String's.
-    val result = subgraph.vertices.innerJoin(subgraph.inDegrees){
+    // Get the inDegree RDD, including the zeroes,
+    val inDegreeGraph = graph.vertices.leftJoin(graph.inDegrees) {
+      (vid, attr, inDegOpt) => inDegOpt.getOrElse(0)
+    }
+
+    // Translate vertexId's back to String's.
+    val result = subgraph.vertices.innerJoin(inDegreeGraph){
       (id, name, indegree) => (name, indegree)
     }.map{ case (id, (name, indegree)) => (name, indegree) }.filter{ x => x._1 != "null"}
 
