@@ -85,19 +85,17 @@ object Ingestor {
       .saveAsTextFile("test/debug/output/dependencies.csv")
 
     // Obtain dependency subgraph.
+    // TODO: Rounding errors in time conversion from milliseconds to seconds.
     val subgraph = graph.subgraph(
       //vpred = (verexId,vd) => vd == "grunt",
       epred = e =>
-        (e.attr.toLong >= targetDate.getMillis() && e.attr.toLong <= (targetDate + 1.days).getMillis())
+        (e.attr.toLong >= targetDate.getMillis()/1000 && e.attr.toLong <= (targetDate + 1.days).getMillis()/1000)
     ).cache()
 
-    // Get the inDegree RDD.
-    val gDegrees = subgraph.inDegrees
-
-    // Translate vertexId's back to String's.
-    val result = subgraph.vertices.innerJoin(gDegrees){
-      (vid, vd, o) => (vd, o)
-    }.map( x => x._2 ).filter{ x => x._1 != "null"}
+    // Get the inDegree RDD, then translate vertexId's back to String's.
+    val result = subgraph.vertices.innerJoin(subgraph.inDegrees){
+      (id, name, indegree) => (name, indegree)
+    }.map{ case (id, (name, indegree)) => (name, indegree) }.filter{ x => x._1 != "null"}
 
     // Write result to file.
     result.saveAsTextFile(output_file)
