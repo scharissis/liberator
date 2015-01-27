@@ -179,5 +179,7 @@ object Reformer {
       }}
       .map( m => pretty(render(Extraction.decompose(m))) )  // To JSON
       .saveAsTextFile(output_file)
+
+    println("Reformed " + packages.count.toString + " packages.")
   }
 }
