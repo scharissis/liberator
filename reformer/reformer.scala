@@ -1,3 +1,5 @@
+package com.liberator
+
 import org.json4s._
 import org.json4s.jackson.JsonMethods._
 import sun.misc.BASE64Decoder
