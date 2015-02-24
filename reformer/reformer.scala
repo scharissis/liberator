@@ -14,6 +14,7 @@ import org.apache.spark.rdd.RDD
 // TODO: Does not produce any deps if there is only one input package.json.
 // TODO: Merge outputs by package?
 object Reformer {
+  var output : org.apache.spark.rdd.RDD[String] =  _
   // Define a Package format.
   implicit lazy val formats = org.json4s.DefaultFormats
   case class Event(version: String, event: String, time: String, commit: String)
@@ -156,9 +157,7 @@ object Reformer {
     return (repoName, (timestamp, commit, data))
   }
 
-  def main(args: Array[String]) {
-    val conf = new SparkConf().setAppName("Liberator Reformer")
-    val sc = new SparkContext(conf)
+  def run(sc : SparkContext) = {
     val repo_source = "../crawler/output/repos/raw/github"
     val input_files = repo_source + "/*/*/package_*.json"
     val output_file = "output"
@@ -175,7 +174,7 @@ object Reformer {
         })
       }
 
-    packages
+    val output = packages
       .map{ case (pname, iterable) => iterable.map{
         case (pack) => pack
       }}
@@ -183,5 +182,12 @@ object Reformer {
       .saveAsTextFile(output_file)
 
     println("Reformed " + packages.count.toString + " packages.")
+  }
+
+  def main(args: Array[String]) {
+    val conf = new SparkConf().setAppName("Liberator Reformer").setMaster("local[2]")
+    val sc = new SparkContext(conf)
+
+    run(sc)
   }
 }
