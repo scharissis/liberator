@@ -160,7 +160,7 @@ object Reformer {
   def run(sc : SparkContext,
     source:String = "../crawler/output/repos/raw/github",
     file_regex:String = "/*/*/package_*.json",
-    output_dir:String = "output") = {
+    output_dir:String = "") = {
 
     // Read & Parse JSON files into NodeJS Packages.
     val nodefiles: org.apache.spark.rdd.RDD[(String,Iterable[(String,String,String)])] =
@@ -182,7 +182,9 @@ object Reformer {
       .map( m => pretty(render(Extraction.decompose(m))) )  // To JSON
 
     Reformer.output = output
-    output.saveAsTextFile(output_dir)
+    if (output_dir != ""){
+      output.saveAsTextFile(output_dir)
+    }
 
     println("Reformed " + packages.count.toString + " packages.")
   }
@@ -191,6 +193,6 @@ object Reformer {
     val conf = new SparkConf().setAppName("Liberator Reformer").setMaster("local[2]")
     val sc = new SparkContext(conf)
 
-    run(sc)
+    run(sc, output_dir = "output")
   }
 }
