@@ -3,6 +3,7 @@ Reformer
 Normalises NodeJS 'package.json' files into Liberator Packages.
 package.json files are described here: https://www.npmjs.org/doc/files/package.json.html
 
+
 Dependencies
 ==
 * Scala <br/>
@@ -16,7 +17,12 @@ Dependencies
 
 Build
 ==
-`sbt package`
+`sbt package` or `make build`
+
+
+Test
+==
+`sbt test` or `make test`
 
 
 Run
@@ -24,8 +30,7 @@ Run
 It is presently assumed that all input files are located in folder test: "test/*.json".
 
 To run:
+`make`
 
-`spark-submit --class "Reformer" --master local[2] target/scala-2.10/reformer_2.10-1.0.jar`
-
-The output will be in output/part-*:
+The output will be in output/part-* files, if an output directory is specified:
 `cat output/part-*`
