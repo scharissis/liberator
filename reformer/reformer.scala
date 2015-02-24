@@ -157,13 +157,14 @@ object Reformer {
     return (repoName, (timestamp, commit, data))
   }
 
-  def run(sc : SparkContext) = {
-    val repo_source = "../crawler/output/repos/raw/github"
-    val input_files = repo_source + "/*/*/package_*.json"
-    val output_file = "output"
+  def run(sc : SparkContext,
+    source:String = "../crawler/output/repos/raw/github",
+    file_regex:String = "/*/*/package_*.json",
+    output_dir:String = "output") = {
 
     // Read & Parse JSON files into NodeJS Packages.
-    val nodefiles: org.apache.spark.rdd.RDD[(String,Iterable[(String,String,String)])] = sc.wholeTextFiles(input_files)
+    val nodefiles: org.apache.spark.rdd.RDD[(String,Iterable[(String,String,String)])] =
+      sc.wholeTextFiles(source + file_regex)
       .map(p => splitPath(p))
       .groupByKey()
 
@@ -179,7 +180,9 @@ object Reformer {
         case (pack) => pack
       }}
       .map( m => pretty(render(Extraction.decompose(m))) )  // To JSON
-      .saveAsTextFile(output_file)
+
+    Reformer.output = output
+    output.saveAsTextFile(output_dir)
 
     println("Reformed " + packages.count.toString + " packages.")
   }
