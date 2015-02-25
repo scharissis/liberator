@@ -10,16 +10,14 @@ import org.apache.spark.SparkConf
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
 
-// Converts NodeJS 'package.json' files into Liberator Packages (aka. RepDep files).
+import com.liberator.PackageJson
+
+// Converts NodeJS 'package.json' files into Liberator PackageJson's (aka. RepDep files).
 // TODO: Does not produce any deps if there is only one input package.json.
 // TODO: Merge outputs by package?
 object Reformer {
-  var output : org.apache.spark.rdd.RDD[String] =  _
-  // Define a Package format.
+
   implicit lazy val formats = org.json4s.DefaultFormats
-  case class Event(version: String, event: String, time: String, commit: String)
-  case class Dependency(name: String, usage: List[Event])
-  case class Package(name: String, source: String, dependencies: List[Dependency])
 
   def decodeBase64(data: String) : String = {
     val bytes = new sun.misc.BASE64Decoder().decodeBuffer(data)
@@ -27,7 +25,7 @@ object Reformer {
   }
 
   // cur/prev: (timestamp, commit, data)
-  def node2package( prev: (String,String,String), cur: (String,String,String), index: Int) : List[Package] = {
+  def node2package( prev: (String,String,String), cur: (String,String,String), index: Int) : List[PackageJson] = {
     val timestamp = cur._1
     val commit = cur._2
     val fromFile = prev._3
@@ -62,14 +60,14 @@ object Reformer {
       parsedPackageFrom = parse(decodedContentFrom)
     } catch { // Bad JSON
       case e: Exception => println("Warning: Failed to parse content of " + url + ":\n" + e)
-      return List(Package("ERROR","", List[Reformer.Dependency]()))
+      return List(PackageJson("ERROR","", List[Dependency]()))
     }
     var parsedPackageTo: org.json4s.JValue = org.json4s.JNothing
     try{
       parsedPackageTo = parse(decodedContentTo)
     } catch { // Bad JSON
       case e: Exception => println("Warning: Failed to parse content of " + url + ":\n" + e)
-      return List(Package("ERROR","", List[Reformer.Dependency]()))
+      return List(PackageJson("ERROR","", List[Dependency]()))
     }
 
     // Dependencies are of the form: 'gruntjs': '0.4.2'
@@ -128,12 +126,12 @@ object Reformer {
       case default => default.extract[String]
     }
 
-    val packages: List[Package] = List( Package(name, source, newDeps++removedDeps++updatedDeps) )
+    val packages: List[PackageJson] = List( PackageJson(name, source, newDeps++removedDeps++updatedDeps) )
 
     if (index == 0) {
       val prevTimestamp = prev._1
       val prevCommit = prev._2
-      val firstPackage = List(Package(name,source,
+      val firstPackage = List(PackageJson(name,source,
         allDepsFrom.map{
           case (name,version) =>   // (dep) = (name,version) => Dependency()
             Dependency(name, List(Event(version, "new", prevTimestamp, prevCommit )))
@@ -160,7 +158,7 @@ object Reformer {
   def run(sc : SparkContext,
     source:String = "../crawler/output/repos/raw/github",
     file_regex:String = "/*/*/package_*.json",
-    output_dir:String = "") = {
+    output_dir:String = "") : org.apache.spark.rdd.RDD[Iterable[PackageJson]] = {
 
     // Read & Parse JSON files into NodeJS Packages.
     val nodefiles: org.apache.spark.rdd.RDD[(String,Iterable[(String,String,String)])] =
@@ -168,7 +166,7 @@ object Reformer {
       .map(p => splitPath(p))
       .groupByKey()
 
-    val packages: org.apache.spark.rdd.RDD[(String,Iterable[Package])] = nodefiles
+    val packages: org.apache.spark.rdd.RDD[(String,Iterable[PackageJson])] = nodefiles
       .map{ case (quad) => // (repo-name, Iterable(timestamp, commit, data))
         (quad._1, quad._2.zip(quad._2.tail).zipWithIndex.flatMap{
           case ((prev,cur), index) => node2package(prev, cur, index)
@@ -179,20 +177,22 @@ object Reformer {
       .map{ case (pname, iterable) => iterable.map{
         case (pack) => pack
       }}
-      .map( m => pretty(render(Extraction.decompose(m))) )  // To JSON
 
-    Reformer.output = output
     if (output_dir != ""){
-      output.saveAsTextFile(output_dir)
+      output
+      .map( m => pretty(render(Extraction.decompose(m))) )  // To JSON
+      .saveAsTextFile(output_dir)
     }
 
     println("Reformed " + packages.count.toString + " packages.")
+
+    return output
   }
 
   def main(args: Array[String]) {
     val conf = new SparkConf().setAppName("Liberator Reformer").setMaster("local[2]")
     val sc = new SparkContext(conf)
 
-    run(sc, output_dir = "output")
+    val _ = run(sc, output_dir = "output")
   }
 }
