@@ -1,0 +1,27 @@
+{
+  "name": "package.json",
+  "path": "package.json",
+  "sha": "66fcb88a28f76add6461da063f6bf24ee8a5df2c",
+  "size": 732,
+  "url": "https://api.github.com/repos/mbostock/d3/contents/package.json?ref=dd2a424f2bdb8fae1dab5ac27168f5bba186a0c4",
+  "html_url": "https://github.com/mbostock/d3/blob/dd2a424f2bdb8fae1dab5ac27168f5bba186a0c4/package.json",
+  "git_url": "https://api.github.com/repos/mbostock/d3/git/blobs/66fcb88a28f76add6461da063f6bf24ee8a5df2c",
+  "download_url": "https://raw.githubusercontent.com/mbostock/d3/dd2a424f2bdb8fae1dab5ac27168f5bba186a0c4/package.json",
+  "type": "file",
+  "content": "ewogICJuYW1lIjogImQzIiwKICAidmVyc2lvbiI6ICIyLjkuMiIsCiAgImRl\nc2NyaXB0aW9uIjogIkEgc21hbGwsIGZyZWUgSmF2YVNjcmlwdCBsaWJyYXJ5\nIGZvciBtYW5pcHVsYXRpbmcgZG9jdW1lbnRzIGJhc2VkIG9uIGRhdGEuIiwK\nICAia2V5d29yZHMiOiBbCiAgICAiZG9tIiwKICAgICJ3M2MiLAogICAgInZp\nc3VhbGl6YXRpb24iLAogICAgInN2ZyIsCiAgICAiYW5pbWF0aW9uIiwKICAg\nICJjYW52YXMiCiAgXSwKICAiaG9tZXBhZ2UiOiAiaHR0cDovL21ib3N0b2Nr\nLmdpdGh1Yi5jb20vZDMvIiwKICAiYXV0aG9yIjogewogICAgIm5hbWUiOiAi\nTWlrZSBCb3N0b2NrIiwKICAgICJ1cmwiOiAiaHR0cDovL2Jvc3Qub2Nrcy5v\ncmcvbWlrZSIKICB9LAogICJyZXBvc2l0b3J5IjogewogICAgInR5cGUiOiAi\nZ2l0IiwKICAgICJ1cmwiOiAiaHR0cDovL2dpdGh1Yi5jb20vbWJvc3RvY2sv\nZDMuZ2l0IgogIH0sCiAgIm1haW4iOiAiaW5kZXguanMiLAogICJicm93c2Vy\naWZ5IjogImluZGV4LWJyb3dzZXJpZnkuanMiLAogICJkZXBlbmRlbmNpZXMi\nOiB7CiAgICAianNkb20iOiAiMC4yLjE0IiwKICAgICJzaXp6bGUiOiAiMS4x\nLngiCiAgfSwKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInVnbGlmeS1q\ncyI6ICIxLjIuMyIsCiAgICAidm93cyI6ICIwLjYueCIKICB9LAogICJzY3Jp\ncHRzIjogewogICAgInRlc3QiOiAiLi9ub2RlX21vZHVsZXMvdm93cy9iaW4v\ndm93cyIKICB9Cn0K\n",
+  "encoding": "base64",
+  "_links": {
+    "self": "https://api.github.com/repos/mbostock/d3/contents/package.json?ref=dd2a424f2bdb8fae1dab5ac27168f5bba186a0c4",
+    "git": "https://api.github.com/repos/mbostock/d3/git/blobs/66fcb88a28f76add6461da063f6bf24ee8a5df2c",
+    "html": "https://github.com/mbostock/d3/blob/dd2a424f2bdb8fae1dab5ac27168f5bba186a0c4/package.json"
+  },
+  "meta": {
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "1953",
+    "x-ratelimit-reset": "1420720517",
+    "x-oauth-scopes": "gist, notifications, read:org, read:public_key, read:repo_hook, repo, user",
+    "last-modified": "Wed, 16 May 2012 16:57:18 GMT",
+    "etag": "\"371024270d6c38245475aff9614f331e\"",
+    "status": "200 OK"
+  }
+}
