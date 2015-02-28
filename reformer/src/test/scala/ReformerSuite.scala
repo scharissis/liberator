@@ -83,7 +83,7 @@ class ReformerSuite extends FunSuite with LocalSparkContext {
       val dependencies = getDependencies(packages)
 
       assert(packages.count === 1)
-      assert(dependencies.contains("d3") === 1)
+      assert(dependencies.contains("d3") === true)
       assert(dependencies("d3").size === 4)
     }
   }
