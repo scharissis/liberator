@@ -10,7 +10,7 @@ import org.apache.spark.SparkConf
 import org.apache.spark._
 import org.apache.spark.rdd.RDD
 
-import com.liberator.PackageJson
+import com.liberator.PackageJson._
 
 // Converts NodeJS 'package.json' files into Liberator PackageJson's (aka. RepDep files).
 // TODO: Does not produce any deps if there is only one input package.json.
@@ -59,14 +59,16 @@ object Reformer {
     try{
       parsedPackageFrom = parse(decodedContentFrom)
     } catch { // Bad JSON
-      case e: Exception => println("Warning: Failed to parse content of " + url + ":\n" + e)
+      case e: Exception => println("Warning: Failed to parse content of decodedContentFrom " + url + " (commit: "+commit+"):\n" + e
+        + "\n --- File Contents (Decoded) ---\n" + decodedContentFrom + "\n ------------------")
       return List(PackageJson("ERROR","", List[Dependency]()))
     }
     var parsedPackageTo: org.json4s.JValue = org.json4s.JNothing
     try{
       parsedPackageTo = parse(decodedContentTo)
     } catch { // Bad JSON
-      case e: Exception => println("Warning: Failed to parse content of " + url + ":\n" + e)
+      case e: Exception => println("Warning: Failed to parse content of decodedContentTo " + url + " (commit: "+commit+"):\n" + e
+        + "\n --- File Contents (Decoded) ---\n" + decodedContentTo + "\n ------------------")
       return List(PackageJson("ERROR","", List[Dependency]()))
     }
 
@@ -128,7 +130,7 @@ object Reformer {
 
     val packages: List[PackageJson] = List( PackageJson(name, source, newDeps++removedDeps++updatedDeps) )
 
-    if (index == 0) {
+    if (index == -1) {  // Case when only 1 input file is given.
       val prevTimestamp = prev._1
       val prevCommit = prev._2
       val firstPackage = List(PackageJson(name,source,
@@ -137,11 +139,12 @@ object Reformer {
             Dependency(name, List(Event(version, "new", prevTimestamp, prevCommit )))
         }.toList
       ))
-      return firstPackage ++ packages
+      return firstPackage
     }
     return packages
   }
 
+  // Returns: (repoName, (timestamp, commit, data))
   // Input: (.../facebook/react/package_1391185509000_bff9731b66093239dc0408fb1d83df423925b6f9.json, <data>)
   // Output: (jade, (1415567992, 2314090c37c2a3ff5c5ae62c77cb6680201475fa, <data>))
   // TODO: The key (first String) should be more unique (hash of company+repo?), as we groupBy it.
@@ -166,11 +169,17 @@ object Reformer {
       .map(p => splitPath(p))
       .groupByKey()
 
-    val packages: org.apache.spark.rdd.RDD[(String,Iterable[PackageJson])] = nodefiles
-      .map{ case (quad) => // (repo-name, Iterable(timestamp, commit, data))
-        (quad._1, quad._2.zip(quad._2.tail).zipWithIndex.flatMap{
-          case ((prev,cur), index) => node2package(prev, cur, index)
-        })
+    val packages: org.apache.spark.rdd.RDD[(String,Iterable[PackageJson])] = nodefiles.count match {
+      case 1 =>
+        nodefiles.map{ case (repoName, repoFileTriplet) =>
+          (repoName,node2package(repoFileTriplet.last, repoFileTriplet.last, -1))
+        }
+      case _ =>
+        nodefiles.map{ case (repoName, repoFileTriplet) =>  // (repoName, (timestamp, commit, data))
+          (repoName, repoFileTriplet.zip(repoFileTriplet.tail).zipWithIndex.flatMap{
+            case ((prev,cur), index) => node2package(prev, cur, index)
+          })
+        }
       }
 
     val output = packages

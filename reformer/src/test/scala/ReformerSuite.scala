@@ -21,16 +21,17 @@ class ReformerSuite extends FunSuite with LocalSparkContext {
 
   private def getPackages(sc: SparkContext, source: String, regex: String)
     : org.apache.spark.rdd.RDD[PackageJson] = {
-    return Reformer.run(sc, source, regex).flatMap(identity)
+      return Reformer.run(sc, source, regex).flatMap(identity)
   }
 
   private def getDependencies(packages : org.apache.spark.rdd.RDD[PackageJson])
     : Map[String,List[Dependency]] = {
-    return packages
-      .map( p => (p.name, p.dependencies)).groupByKey
-      .map( pair => (pair._1, pair._2.flatMap(identity).toList))
-      .collect
-      .toMap
+      return packages
+        .map( p => (p.name, p.dependencies))
+        .groupByKey
+        .map( pair => (pair._1, pair._2.flatMap(identity).toList))
+        .collect
+        .toMap
   }
 
   val test_source = "src/test/resources/"
@@ -49,14 +50,42 @@ class ReformerSuite extends FunSuite with LocalSparkContext {
     }
   }
 
+  test("single package") {
+    withSpark(newSparkContext()) { sc =>
+      val packages = getPackages(sc, test_source, "single/package*.json")
+      val dependencies = getDependencies(packages)
+
+      assert(packages.count === 1)
+      assert(dependencies.contains("d3"))
+      assert(dependencies.keys.size === 1)
+      assert(dependencies("d3").length === 4)
+
+      val timestamp = "1337187438"
+      val commit = "dd2a424f2bdb8fae1dab5ac27168f5bba186a0c4"
+      val expectedResult : Map[String, List[Dependency]] =
+        Map(
+          "d3" -> List(
+            Dependency("jsdom", List(Event("0.2.14", "new", timestamp, commit))),
+            Dependency("sizzle", List(Event("1.1.x", "new", timestamp, commit))),
+            Dependency("uglify-js", List(Event("1.2.3", "new", timestamp, commit))),
+            Dependency("vows", List(Event("0.6.x", "new", timestamp, commit)))
+          )
+        )
+      expectedResult("d3").foreach { expectedDep =>
+        assert(dependencies("d3").contains(expectedDep))
+      }
+    }
+  }
+
   test("simple - identical inputs") {
     withSpark(newSparkContext()) { sc =>
       val packages = getPackages(sc, test_source, "simple/identical/package*.json")
       val dependencies = getDependencies(packages)
 
-      assert(packages.count === 2)  // 2 input package.json's
-      assert(dependencies.size === 1) // 1 resultant Package (they were identical)
-      assert(dependencies("d3").size === 4) // 4 discrete Dependencies
+      assert(packages.count === 1)
+      assert(dependencies.contains("d3") === 1)
+      assert(dependencies("d3").size === 4)
     }
   }
+
 }
