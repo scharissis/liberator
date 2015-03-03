@@ -13,7 +13,6 @@ import org.apache.spark.rdd.RDD
 import com.liberator.PackageJson._
 
 // Converts NodeJS 'package.json' files into Liberator PackageJson's (aka. RepDep files).
-// TODO: Does not produce any deps if there is only one input package.json.
 // TODO: Merge outputs by package?
 object Reformer {
 
@@ -130,7 +129,8 @@ object Reformer {
 
     val packages: List[PackageJson] = List( PackageJson(name, source, newDeps++removedDeps++updatedDeps) )
 
-    if (index == -1) {  // Case when only 1 input file is given.
+    // The first pair is faked into here to produce a list of 'new' deps.
+    if (index == 0) {
       val prevTimestamp = prev._1
       val prevCommit = prev._2
       val firstPackage = List(PackageJson(name,source,
@@ -169,18 +169,15 @@ object Reformer {
       .map(p => splitPath(p))
       .groupByKey()
 
-    val packages: org.apache.spark.rdd.RDD[(String,Iterable[PackageJson])] = nodefiles.count match {
-      case 1 =>
-        nodefiles.map{ case (repoName, repoFileTriplet) =>
-          (repoName,node2package(repoFileTriplet.last, repoFileTriplet.last, -1))
-        }
-      case _ =>
-        nodefiles.map{ case (repoName, repoFileTriplet) =>  // (repoName, (timestamp, commit, data))
-          (repoName, repoFileTriplet.zip(repoFileTriplet.tail).zipWithIndex.flatMap{
-            case ((prev,cur), index) => node2package(prev, cur, index)
-          })
-        }
+    val f : (String,String,String) = nodefiles.first._2.head
+    val first : Iterable[((String,String,String),(String,String,String))] = Iterable((f,f))
+    val packages: org.apache.spark.rdd.RDD[(String,Iterable[PackageJson])] = {
+      nodefiles.map{ case (repoName, repoTripletPair) =>  // (repoName, (timestamp, commit, data))
+        (repoName, ( first ++ repoTripletPair.zip(repoTripletPair.tail)).zipWithIndex.flatMap{
+          case ((prev,cur), index) => node2package(prev, cur, index)
+        })
       }
+    }
 
     val output = packages
       .map{ case (pname, iterable) => iterable.map{

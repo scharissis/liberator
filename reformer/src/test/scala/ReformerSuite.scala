@@ -9,6 +9,7 @@ import org.scalatest.FunSuite
 import com.liberator.LocalSparkContext._
 import com.liberator.PackageJson._
 
+
 class ReformerSuite extends FunSuite with LocalSparkContext {
 
   private def newSparkContext(): SparkContext = {
@@ -36,18 +37,11 @@ class ReformerSuite extends FunSuite with LocalSparkContext {
 
   val test_source = "src/test/resources/"
 
-  test("SparkContext - starts/stops") {
+  test("start/stop SparkContext") {
     withSpark(newSparkContext()) { sc =>
       assert(sc != null)
     }
     assert(sc == null)
-  }
-
-  test("simple - runs okay") {
-    withSpark(newSparkContext()) { sc =>
-      val output = Reformer.run(sc, source = test_source, file_regex = "simple/identical/package*.json")
-      assert(output.count != 0)
-    }
   }
 
   test("single package") {
@@ -72,20 +66,37 @@ class ReformerSuite extends FunSuite with LocalSparkContext {
           )
         )
       expectedResult("d3").foreach { expectedDep =>
-        assert(dependencies("d3").contains(expectedDep))
+        assert(dependencies("d3").contains(expectedDep) === true)
       }
     }
   }
 
-  test("simple - identical inputs") {
+  test("pair of identical packages") {
     withSpark(newSparkContext()) { sc =>
       val packages = getPackages(sc, test_source, "simple/identical/package*.json")
       val dependencies = getDependencies(packages)
 
-      assert(packages.count === 1)
+      val timestamp = "1337187438"  // seconds
+      val commit = "dd2a424f2bdb8fae1dab5ac27168f5bba186a0c4"
+      val expectedResult : Map[String, List[Dependency]] =
+        Map(
+          "d3" -> List(
+            Dependency("jsdom", List(Event("0.2.14", "new", timestamp, commit))),
+            Dependency("sizzle", List(Event("1.1.x", "new", timestamp, commit))),
+            Dependency("uglify-js", List(Event("1.2.3", "new", timestamp, commit))),
+            Dependency("vows", List(Event("0.6.x", "new", timestamp, commit)))
+          )
+        )
+
+      assert(packages.count === 2)
       assert(dependencies.contains("d3") === true)
       assert(dependencies("d3").size === 4)
+
+      expectedResult("d3").foreach { expectedDep =>
+        assert(dependencies("d3").contains(expectedDep) === true)
+      }
     }
+
   }
 
 }
