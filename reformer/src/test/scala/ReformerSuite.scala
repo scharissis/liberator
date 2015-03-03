@@ -96,7 +96,36 @@ class ReformerSuite extends FunSuite with LocalSparkContext {
         assert(dependencies("d3").contains(expectedDep) === true)
       }
     }
+  }
 
+  test("one new dependency") {
+    withSpark(newSparkContext()) { sc =>
+      val packages = getPackages(sc, test_source, "simple/new_one/package*.json")
+      val dependencies = getDependencies(packages)
+
+      val timestamp = "1337187438"  // seconds
+      val timestamp2 = "1337287438"  // seconds
+      val commit = "dd2a424f2bdb8fae1dab5ac27168f5bba186a0c4"
+      val commit2 = "ed2a424f2bdb8fae1dab5ac27168f5bba186a0c4"
+      val expectedResult : Map[String, List[Dependency]] =
+        Map(
+          "d3" -> List(
+            Dependency("jsdom", List(Event("0.2.14", "new", timestamp, commit))),
+            Dependency("sizzle", List(Event("1.1.x", "new", timestamp, commit))),
+            Dependency("uglify-js", List(Event("1.2.3", "new", timestamp, commit))),
+            Dependency("vows", List(Event("0.6.x", "new", timestamp, commit))),
+            Dependency("new_one", List(Event("0.0.0", "new", timestamp2, commit2)))
+          )
+        )
+
+      assert(packages.count === 2)
+      assert(dependencies.contains("d3") === true)
+      assert(dependencies("d3").size === 5)
+
+      expectedResult("d3").foreach { expectedDep =>
+        assert(dependencies("d3").contains(expectedDep) === true)
+      }
+    }
   }
 
 }
