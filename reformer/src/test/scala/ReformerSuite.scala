@@ -49,11 +49,6 @@ class ReformerSuite extends FunSuite with LocalSparkContext {
       val packages = getPackages(sc, test_source, "single/package*.json")
       val dependencies = getDependencies(packages)
 
-      assert(packages.count === 1)
-      assert(dependencies.contains("d3"))
-      assert(dependencies.keys.size === 1)
-      assert(dependencies("d3").length === 4)
-
       val timestamp = "1337187438"
       val commit = "dd2a424f2bdb8fae1dab5ac27168f5bba186a0c4"
       val expectedResult : Map[String, List[Dependency]] =
@@ -65,6 +60,11 @@ class ReformerSuite extends FunSuite with LocalSparkContext {
             Dependency("vows", List(Event("0.6.x", "new", timestamp, commit)))
           )
         )
+
+      assert(packages.count === 1)
+      assert(dependencies.contains("d3"))
+      assert(dependencies.keys.size === 1)
+      assert(dependencies("d3").length === 4)
       expectedResult("d3").foreach { expectedDep =>
         assert(dependencies("d3").contains(expectedDep) === true)
       }
@@ -91,7 +91,6 @@ class ReformerSuite extends FunSuite with LocalSparkContext {
       assert(packages.count === 2)
       assert(dependencies.contains("d3") === true)
       assert(dependencies("d3").size === 4)
-
       expectedResult("d3").foreach { expectedDep =>
         assert(dependencies("d3").contains(expectedDep) === true)
       }
@@ -121,7 +120,35 @@ class ReformerSuite extends FunSuite with LocalSparkContext {
       assert(packages.count === 2)
       assert(dependencies.contains("d3") === true)
       assert(dependencies("d3").size === 5)
+      expectedResult("d3").foreach { expectedDep =>
+        assert(dependencies("d3").contains(expectedDep) === true)
+      }
+    }
+  }
 
+  test("one removed dependency") {
+    withSpark(newSparkContext()) { sc =>
+      val packages = getPackages(sc, test_source, "simple/removed_one/package*.json")
+      val dependencies = getDependencies(packages)
+
+      val timestamp = "1337187438"  // seconds
+      val timestamp2 = "1337287438"  // seconds
+      val commit = "dd2a424f2bdb8fae1dab5ac27168f5bba186a0c4"
+      val commit2 = "ed2a424f2bdb8fae1dab5ac27168f5bba186a0c4"
+      val expectedResult : Map[String, List[Dependency]] =
+        Map(
+          "d3" -> List(
+            Dependency("jsdom", List(Event("0.2.14", "new", timestamp, commit))),
+            Dependency("sizzle", List(Event("1.1.x", "new", timestamp, commit))),
+            Dependency("uglify-js", List(Event("1.2.3", "new", timestamp, commit))),
+            Dependency("vows", List(Event("0.6.x", "new", timestamp, commit))),
+            Dependency("sizzle", List(Event("1.1.x", "removed", timestamp2, commit2)))
+          )
+        )
+
+      assert(packages.count === 2)
+      assert(dependencies.contains("d3") === true)
+      assert(dependencies("d3").size === 5)
       expectedResult("d3").foreach { expectedDep =>
         assert(dependencies("d3").contains(expectedDep) === true)
       }
