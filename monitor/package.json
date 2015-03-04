@@ -1,0 +1,18 @@
+{
+  "name": "monitor",
+  "version": "1.0.0",
+  "description": "Monitors source repositories for activity and sends crawl requests for relevant updates",
+  "private": true,
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "dependencies": {
+    "async": "^0.9",
+    "co": "^4.0",
+    "co-fs": "^1.2",
+    "co-fs-plus": "^0.3",
+    "github": "^0.2",
+    "lodash": "^2.4.1",
+    "winston": "^0.8"
+  }
+}
