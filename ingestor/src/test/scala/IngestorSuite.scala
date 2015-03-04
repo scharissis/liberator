@@ -12,6 +12,8 @@ import com.liberator.PackageJson._
 
 class IngestorSuite extends FunSuite with LocalSparkContext {
 
+  val test_source = "src/test/resources/"
+
   private def newSparkContext(): SparkContext = {
     val conf = new SparkConf()
       .setMaster("local")
@@ -20,13 +22,23 @@ class IngestorSuite extends FunSuite with LocalSparkContext {
     sc
   }
 
-  val test_source = "src/test/resources/"
+  private def getIngestedDeps(sc: SparkContext, source: String, regex: String)
+    : org.apache.spark.rdd.RDD[(String, Int)] = {
+      return Ingestor.run(sc, source, regex)
+  }
 
   test("start/stop SparkContext") {
     withSpark(newSparkContext()) { sc =>
       assert(sc != null)
     }
     assert(sc == null)
+  }
+
+  test("one package") {
+    withSpark(newSparkContext()) { sc =>
+      val deps = getIngestedDeps(sc, test_source, "single/part-*")
+      deps foreach println
+    }
   }
 
 }

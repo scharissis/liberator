@@ -41,7 +41,8 @@ object Ingestor {
     sc : SparkContext,
     source:String = "../reformer/output",
     file_regex:String = "/part-*",
-    output_dir:String = "") : org.apache.spark.rdd.RDD[(String, Int)] = {
+    output_dir:String = "",
+    debug:Boolean = false) : org.apache.spark.rdd.RDD[(String, Int)] = {
 
     val targetDate = DateTime.yesterday.withTimeAtStartOfDay()
 
@@ -72,18 +73,19 @@ object Ingestor {
     // Build a directed multi-Graph.
     val graph: Graph[String, String] = Graph(vertices, edges)
 
-    // Neo4J Debug Graph
-    // TODO: Enable with a '--debug' flag of some sort.
-    // Vertices/Nodes
-    // Format: :ID,:LABEL,name
-    graph.vertices
-      .map{ case (id, name) => Array(id, "package", name).mkString(",") }
-      .saveAsTextFile("test/debug/output/packages.csv")
-    // Edges/Relationships
-    // Format: :START_ID,:END_ID,:TYPE
-    graph.triplets
-      .map( triplet => Array(hash(triplet.srcAttr), hash(triplet.dstAttr), "dep").mkString(",") )
-      .saveAsTextFile("test/debug/output/dependencies.csv")
+    if (debug) {
+      // Neo4J Debug Graph
+      // Vertices/Nodes
+      // Format: :ID,:LABEL,name
+      graph.vertices
+        .map{ case (id, name) => Array(id, "package", name).mkString(",") }
+        .saveAsTextFile("test/debug/output/packages.csv")
+      // Edges/Relationships
+      // Format: :START_ID,:END_ID,:TYPE
+      graph.triplets
+        .map( triplet => Array(hash(triplet.srcAttr), hash(triplet.dstAttr), "dep").mkString(",") )
+        .saveAsTextFile("test/debug/output/dependencies.csv")
+    }
 
     // Obtain dependency subgraph.
     // TODO: Rounding errors in time conversion from milliseconds to seconds.
@@ -104,7 +106,9 @@ object Ingestor {
     }.map{ case (id, (name, indegree)) => (name, indegree) }.filter{ x => x._1 != "null"}
 
     // Write result to file.
-    result.saveAsTextFile(output_dir)
+    if (output_dir != ""){
+      result.saveAsTextFile(output_dir)
+    }
 
     // Write result to DB.
     result.foreachPartition { (partition) =>
@@ -128,6 +132,6 @@ object Ingestor {
     val conf = new SparkConf().setAppName("Liberator Ingestor").setMaster("local[2]")
     val sc = new SparkContext(conf)
 
-    val _ = run(sc, output_dir = "output")
+    val _ = run(sc, output_dir = "output", debug = true)
   }
 }

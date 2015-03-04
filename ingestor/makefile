@@ -1,4 +1,4 @@
-default: build db
+default: db build
 	@echo "[make] RUNNING..."
 	spark-submit \
 		--class "com.liberator.Ingestor" \
