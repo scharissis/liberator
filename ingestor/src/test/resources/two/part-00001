@@ -1,0 +1,30 @@
+[
+  {
+    "name" : "test-dep-1",
+    "source" : "unknown",
+    "dependencies" : [
+      {
+        "name" : "test-dep-3",
+        "usage" : [
+          {
+            "version" : "0.0.3",
+            "event" : "new",
+            "time" : "1369857242",
+            "commit" : "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"
+          }
+        ]
+      },
+      {
+        "name" : "test-dep-4",
+        "usage" : [
+          {
+            "version" : "0.0.4",
+            "event" : "new",
+            "time" : "1369857242",
+            "commit" : "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"
+          }
+        ]
+      }
+    ]
+  }
+]

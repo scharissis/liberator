@@ -52,4 +52,24 @@ class IngestorSuite extends FunSuite with LocalSparkContext {
     }
   }
 
+  test("two packages") {
+    withSpark(newSparkContext()) { sc =>
+      val deps = getIngestedDeps(sc, test_source, "two/part-*")
+
+      val expectedMap : Map[String,Int] = Map(
+        ("test-repo" -> 0),
+        ("test-dep-1" -> 1),
+        ("test-dep-2" -> 1),
+        ("test-dep-3" -> 1),
+        ("test-dep-4" -> 1)
+      )
+
+      assert(deps.size != 0)
+      expectedMap foreach { case (depName,usageCount) =>
+        assert(deps.contains(depName) === true)
+        assert(deps(depName) === usageCount)
+      }
+    }
+  }
+
 }
