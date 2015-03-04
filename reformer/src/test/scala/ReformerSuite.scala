@@ -28,14 +28,15 @@ class ReformerSuite extends FunSuite with LocalSparkContext {
   private def getDependencies(packages : org.apache.spark.rdd.RDD[PackageJson])
     : Map[String,List[Dependency]] = {
       return packages
-        .map( p => (p.name, p.dependencies))
+        .map( p => (p.name, p.dependencies) )
         .groupByKey
-        .map( pair => (pair._1, pair._2.flatMap(identity).toList))
+        .map( pair => (pair._1, pair._2.flatMap(identity).toList) )
         .collect
         .toMap
   }
 
   val test_source = "src/test/resources/"
+
 
   test("start/stop SparkContext") {
     withSpark(newSparkContext()) { sc =>
