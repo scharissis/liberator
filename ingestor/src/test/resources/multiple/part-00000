@@ -1,0 +1,30 @@
+[
+  {
+    "name" : "test-repo-1",
+    "source" : "unknown",
+    "dependencies" : [
+      {
+        "name" : "test-dep-1",
+        "usage" : [
+          {
+            "version" : "0.0.1",
+            "event" : "new",
+            "time" : "1369857242",
+            "commit" : "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"
+          }
+        ]
+      },
+      {
+        "name" : "test-dep-2",
+        "usage" : [
+          {
+            "version" : "0.0.2",
+            "event" : "new",
+            "time" : "1369857242",
+            "commit" : "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"
+          }
+        ]
+      }
+    ]
+  }
+]

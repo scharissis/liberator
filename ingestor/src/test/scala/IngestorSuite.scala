@@ -72,4 +72,24 @@ class IngestorSuite extends FunSuite with LocalSparkContext {
     }
   }
 
+  // test-dep-1 and test-dep-2 are used by both test-repo-1 and test-repo-2.
+  test("multiple packages") {
+    withSpark(newSparkContext()) { sc =>
+      val deps = getIngestedDeps(sc, test_source, "multiple/part-*")
+
+      val expectedMap : Map[String,Int] = Map(
+        ("test-repo-1" -> 0),
+        ("test-repo-2" -> 0),
+        ("test-dep-1" -> 2),
+        ("test-dep-2" -> 2)
+      )
+
+      assert(deps.size != 0)
+      expectedMap foreach { case (depName,usageCount) =>
+        assert(deps.contains(depName) === true)
+        assert(deps(depName) === usageCount)
+      }
+    }
+  }
+
 }
