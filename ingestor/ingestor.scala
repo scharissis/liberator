@@ -42,6 +42,7 @@ object Ingestor {
     source:String = "../reformer/output",
     file_regex:String = "/part-*",
     output_dir:String = "",
+    save_to_db:Boolean = true,
     debug:Boolean = false) : org.apache.spark.rdd.RDD[(String, Int)] = {
 
     val targetDate = DateTime.yesterday.withTimeAtStartOfDay()
@@ -111,15 +112,17 @@ object Ingestor {
     }
 
     // Write result to DB.
-    result.foreachPartition { (partition) =>
-      partition.foreach { case (name, count) =>
-        using (DB (DriverManager .getConnection (db_jdbc, db_username, db_password))) {db =>
-          db.localTx { implicit session =>
-            sql"""
-             insert into liberator_nodejs (package_id, usage_date, usage_count)
-             values (${name}, current_timestamp, ${count})
-             """
-             .update.apply()
+    if (save_to_db == true){
+      result.foreachPartition { (partition) =>
+        partition.foreach { case (name, count) =>
+          using (DB (DriverManager .getConnection (db_jdbc, db_username, db_password))) {db =>
+            db.localTx { implicit session =>
+              sql"""
+               insert into liberator_nodejs (package_id, usage_date, usage_count)
+               values (${name}, current_timestamp, ${count})
+               """
+               .update.apply()
+            }
           }
         }
       }

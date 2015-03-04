@@ -24,7 +24,7 @@ class IngestorSuite extends FunSuite with LocalSparkContext {
 
   private def getIngestedDeps(sc: SparkContext, source: String, regex: String)
     : org.apache.spark.rdd.RDD[(String, Int)] = {
-      return Ingestor.run(sc, source, regex)
+      return Ingestor.run(sc, source, regex, save_to_db = false)
   }
 
   test("start/stop SparkContext") {
@@ -37,7 +37,7 @@ class IngestorSuite extends FunSuite with LocalSparkContext {
   test("one package") {
     withSpark(newSparkContext()) { sc =>
       val deps = getIngestedDeps(sc, test_source, "single/part-*")
-      deps foreach println
+      assert(deps.count != 0)
     }
   }
 
