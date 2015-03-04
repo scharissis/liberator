@@ -14,6 +14,8 @@ import com.github.nscala_time.time.Imports._
 import java.sql.{Connection, DriverManager, ResultSet}
 import scalikejdbc._
 
+import com.liberator.PackageJson._
+
 // Input: Files containing Lists of RepDep files.
 // Output: Files containing number of dependencies per package.
 // TODO: Add timestamp to graph edges and output accordingly.
@@ -33,25 +35,22 @@ object Ingestor {
   // Generate a pseudo-Unique VertexId of type Long.
   def hash(s: String): Long = { sanitiseString(s).hashCode.toLong }
 
-  // Define a Package format.
   implicit val formats = org.json4s.DefaultFormats
-  case class Event(version: String, event: String, time: String, commit: String)
-  case class Dependency(name: String, usage: List[Event])
-  case class Package(name: String, source: String, dependencies: List[Dependency])
 
-  def main(args: Array[String]) {
-    val conf = new SparkConf().setAppName("Liberator Ingestor")
-    val sc = new SparkContext(conf)
-    val input_files = "../reformer/output/part-*"
-    val output_file = "output"
+  def run(
+    sc : SparkContext,
+    source:String = "../reformer/output",
+    file_regex:String = "/part-*",
+    output_dir:String = "") : org.apache.spark.rdd.RDD[(String, Int)] = {
+
     val targetDate = DateTime.yesterday.withTimeAtStartOfDay()
 
     // Read & Parse JSON files into Packages.
     // TODO: Ignore empty files needed?
-    val packages: org.apache.spark.rdd.RDD[Package] = sc.wholeTextFiles(input_files)
+    val packages: org.apache.spark.rdd.RDD[PackageJson] = sc.wholeTextFiles(source + file_regex)
       .filter{ case (filename,filecontent) => filecontent != "" } // Skip empty files.
       .map(json  =>  { parse(json._2) })                          // Discard filename.
-      .map(json  =>  json.extract[ List[Package] ])
+      .map(json  =>  json.extract[ List[PackageJson] ])
       .flatMap(identity)
       .cache
 
@@ -100,12 +99,12 @@ object Ingestor {
     }
 
     // Translate vertexId's back to String's.
-    val result = subgraph.vertices.innerJoin(inDegreeGraph){
+    val result: org.apache.spark.rdd.RDD[(String, Int)] = subgraph.vertices.innerJoin(inDegreeGraph){
       (id, name, indegree) => (name, indegree)
     }.map{ case (id, (name, indegree)) => (name, indegree) }.filter{ x => x._1 != "null"}
 
     // Write result to file.
-    result.saveAsTextFile(output_file)
+    result.saveAsTextFile(output_dir)
 
     // Write result to DB.
     result.foreachPartition { (partition) =>
@@ -122,5 +121,13 @@ object Ingestor {
       }
     }
     println("Completed ingestion for date: " + DateTimeFormat.forPattern("yyyy-MM-dd").print(targetDate))
+    return result
+  }
+
+  def main(args: Array[String]) {
+    val conf = new SparkConf().setAppName("Liberator Ingestor").setMaster("local[2]")
+    val sc = new SparkContext(conf)
+
+    val _ = run(sc, output_dir = "output")
   }
 }

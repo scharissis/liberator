@@ -1,7 +1,7 @@
 default: build db
 	@echo "[make] RUNNING..."
 	spark-submit \
-		--class "com.liberator.Ingestor" --master local[2] \
+		--class "com.liberator.Ingestor" \
 		target/scala-2.10/Ingestor-assembly-1.0.jar \
 		--jar lib/postgresql-9.3-1102-jdbc41.jar
 	@echo ""
@@ -23,6 +23,10 @@ debug: report
 	@echo "[make] DEBUGGING..."
 	./test/debug/neo4j.sh
 	@echo ""
+
+test: clean
+	@echo "[make] TESTING..."
+	sbt test
 
 clean:
 	@echo "[make] CLEANING..."

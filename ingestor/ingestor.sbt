@@ -12,5 +12,6 @@ libraryDependencies ++= Seq(
   "org.scalikejdbc"         %% "scalikejdbc"    % "2.2.0",
   "com.h2database"          % "h2"              % "1.4.182",
   "ch.qos.logback"          % "logback-classic" % "1.1.2",
-  "com.github.nscala-time"  %% "nscala-time"    % "1.6.0"
+  "com.github.nscala-time"  %% "nscala-time"    % "1.6.0",
+  "org.scalatest"           % "scalatest_2.10"  % "2.0"     % "test"
 )
