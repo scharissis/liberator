@@ -18,7 +18,6 @@ import com.liberator.PackageJson._
 
 // Input: Files containing Lists of RepDep files.
 // Output: Files containing number of dependencies per package.
-// TODO: Add timestamp to graph edges and output accordingly.
 object Ingestor {
   Class.forName("org.postgresql.Driver")
   val db_name="liberator_test"
@@ -26,6 +25,10 @@ object Ingestor {
   val db_jdbc = "jdbc:postgresql://"+ db_url + "/" + db_name
   val db_username = "liberator"
   val db_password = "liberator"
+
+  implicit val formats = org.json4s.DefaultFormats
+
+  val infinity = Int.MaxValue
 
   // Transform strings for consistent hashing.
   def sanitiseString(s: String): String = {
@@ -35,21 +38,23 @@ object Ingestor {
   // Generate a pseudo-Unique VertexId of type Long.
   def hash(s: String): Long = { sanitiseString(s).hashCode.toLong }
 
-  implicit val formats = org.json4s.DefaultFormats
-
   def run(
     sc : SparkContext,
     source:String = "../reformer/output",
     file_regex:String = "/part-*",
+
+    targetDate:DateTime = DateTime.yesterday.withTimeAtStartOfDay(),
     output_dir:String = "",
     save_to_db:Boolean = true,
     debug:Boolean = false) : org.apache.spark.rdd.RDD[(String, Int)] = {
 
-    val targetDate = DateTime.yesterday.withTimeAtStartOfDay()
+      val targetDateEpoch = targetDate.getMillis()/1000
+      println("TARGET DATE: " + targetDate)
 
     // Read & Parse JSON files into Packages.
     // TODO: Ignore empty files needed?
-    val packages: org.apache.spark.rdd.RDD[PackageJson] = sc.wholeTextFiles(source + file_regex)
+    val packages: org.apache.spark.rdd.RDD[PackageJson] = sc
+      .wholeTextFiles(source + file_regex)
       .filter{ case (filename,filecontent) => filecontent != "" } // Skip empty files.
       .map(json  =>  { parse(json._2) })                          // Discard filename.
       .map(json  =>  json.extract[ List[PackageJson] ])
@@ -63,16 +68,90 @@ object Ingestor {
         .distinct
     )
 
+    if (debug) {
+      println("VERTICES: " + vertices.count)
+      println("VERTICES: " + vertices.collect)
+
+      println("PACKAGES: ")
+      for {
+          pac <- packages
+      } if ( pac.dependencies.size > -1) println(" - " + pac.name + ": " + pac.dependencies.size + " dependencies.")
+
+      println("DEPENDENCIES: ")
+      for {
+          pac <- packages
+          dep <- pac.dependencies
+      } println(pac.name + " --> " + dep.name)
+
+      println("USAGES: ")
+      for {
+          pac <- packages
+          dep <- pac.dependencies
+      } if ( dep.usage.size > 0) println(" - " + dep.name + ": " + dep.usage.size + " usages.")
+
+      println("PAIRS: ")
+      for {
+          pac <- packages
+          dep <- pac.dependencies
+          pair <- dep.usage.zip(dep.usage.tail)  // empty if dep.usage.count < 2
+      } println("pair: " + pair) // Pair(e1,e2)
+    }
+
     // Generate Edge RDD.
     // Define: connection(a,b) => 'b is a dependency of a'.
-    val edges: org.apache.spark.rdd.RDD[Edge[String]] = for {
+    val edges_tmp: org.apache.spark.rdd.RDD[Triple[PackageJson,Dependency,List[Range]]] = for {
         pac <- packages
         dep <- pac.dependencies
-        event <- dep.usage
-    } yield { Edge(hash(pac.name), hash(dep.name), event.time ) }
+        Pair(e1,e2) <- dep.usage.size match {
+          case 1 => List((dep.usage.head, dep.usage.head))  // hack; (new,new) won't match a case below.
+          case _ => dep.usage.zip(dep.usage.tail)
+        }
+    } yield {
+      val a: String = e1.event
+      val b: String = e2.event
+      val t1: Int = e1.time.toInt
+      val t2: Int = e2.time.toInt
+      (a,b) match {
+        case ("new", "updated") => Triple(pac, dep, List(Range(t1,t2), Range(t2,infinity)))
+        case ("new", "removed") => Triple(pac, dep, List(Range(t1,t2)))
+        case ("updated", "updated") => Triple(pac, dep, List(Range(t1,t2), Range(t2,infinity)))
+        case ("updated", "removed") => Triple(pac, dep, List(Range(t1,t2)))
+        case ("removed", "removed") => Triple(pac, dep, List(Range(t2,infinity)))
+        case _ => Triple(pac, dep, List(Range(t1,infinity)))
+      }
+    }
+
+    val edges_tmp_stitched: org.apache.spark.rdd.RDD[Triple[PackageJson,Dependency,Range]] =
+      for {
+        (pkg, dep, ranges) <- edges_tmp
+        (range, index) <- ranges.zipWithIndex
+    } yield (pkg, dep, range.size match {
+        case 0 => Range(0,0)
+        case _ => range.last match {
+          case `infinity` =>
+            if (index+1 < ranges.size-1){  // not the last
+              println("Ranges.size: " + ranges.size + " | index: " + (index+1));
+              Range(range.head, ranges(index+1).head)
+            } else { range }
+          case _ => range
+          }
+        }
+      )
+
+    if (debug) {
+      println("Target date: " + targetDate + " (" + targetDateEpoch + ")")
+      for {
+        (pkg,dep,range) <- edges_tmp_stitched
+      } println(pkg + "\n - Dep: " + dep + "\n - Range: [" + range.start + " ... " + range.end + "] (" + range.contains(targetDateEpoch) + ")\n" )
+    }
+
+    val edges: org.apache.spark.rdd.RDD[Edge[Range]] = edges_tmp_stitched
+      .map { case (pkg, dep, range) =>
+        Edge(hash(pkg.name), hash(dep.name), range )
+      }
 
     // Build a directed multi-Graph.
-    val graph: Graph[String, String] = Graph(vertices, edges)
+    val graph: Graph[String, Range] = Graph(vertices, edges)
 
     if (debug) {
       // Neo4J Debug Graph
@@ -89,22 +168,34 @@ object Ingestor {
     }
 
     // Obtain dependency subgraph.
-    // TODO: Rounding errors in time conversion from milliseconds to seconds.
     val subgraph = graph.subgraph(
-      //vpred = (verexId,vd) => vd == "grunt",
-      epred = e =>
-        (e.attr.toLong >= targetDate.getMillis()/1000 && e.attr.toLong <= (targetDate + 1.days).getMillis()/1000)
+      // Example vertex predicatre:  vpred = (verexId,vd) => vd == "grunt",
+      epred = e => e.attr.contains(targetDateEpoch)
     ).cache()
 
+    if (debug) {
+      println("The graph size: " + graph.vertices.count + " | " + graph.edges.count)
+      println("Subgraph size: " + subgraph.vertices.count + " verts | " + subgraph.edges.count + " edges")
+    }
+
     // Get the inDegree RDD, including the zeroes,
-    val inDegreeGraph = graph.vertices.leftJoin(graph.inDegrees) {
-      (vid, attr, inDegOpt) => inDegOpt.getOrElse(0)
+    val inDegreeGraph = graph.vertices.leftJoin(subgraph.inDegrees) {
+      (vId, attr, inDegOpt) => inDegOpt.getOrElse(0)
     }
 
     // Translate vertexId's back to String's.
     val result: org.apache.spark.rdd.RDD[(String, Int)] = subgraph.vertices.innerJoin(inDegreeGraph){
       (id, name, indegree) => (name, indegree)
     }.map{ case (id, (name, indegree)) => (name, indegree) }.filter{ x => x._1 != "null"}
+
+    if (debug) {
+      println("SUBGRAPH.vertices:")
+      subgraph.vertices.foreach { println }
+      println("inDegreeGraph:")
+      inDegreeGraph.foreach { println }
+      println("RESULT:")
+      result.foreach { println }
+    }
 
     // Write result to file.
     if (output_dir != ""){
@@ -127,7 +218,14 @@ object Ingestor {
         }
       }
     }
-    println("Completed ingestion for date: " + DateTimeFormat.forPattern("yyyy-MM-dd").print(targetDate))
+
+    if (debug) {
+      println("Completed ingestion for timestamp: " +
+        DateTimeFormat.forPattern("yyyy-MM-dd").print(targetDate) +
+        " (" + targetDateEpoch + ")"
+      )
+    }
+
     return result
   }
 
