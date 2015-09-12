@@ -17,3 +17,7 @@ libraryDependencies ++= Seq(
 )
 
 test in assembly := {}
+
+// TODO: Implement a proper multi-project SBT file.
+// Until then, this can easily allow us to package IngestorHistorical.
+// mainClass in assembly := Some("com.liberator.IngestorHistorical.Main")

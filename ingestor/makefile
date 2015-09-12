@@ -6,6 +6,14 @@ default: db build
 		--jar lib/postgresql-9.3-1102-jdbc41.jar
 	@echo ""
 
+historical: db build
+	@echo "[make] RUNNING HISTORICAL..."
+	spark-submit \
+		--class "com.liberator.IngestorHistorical" \
+		target/scala-2.10/Ingestor-assembly-1.0.jar \
+		--jar lib/postgresql-9.3-1102-jdbc41.jar
+	@echo ""
+
 build: clean
 	@echo "[make] BUILDING..."
 	sbt assembly
