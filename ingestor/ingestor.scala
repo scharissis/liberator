@@ -48,8 +48,12 @@ object Ingestor {
     save_to_db:Boolean = true,
     debug:Boolean = false) : org.apache.spark.rdd.RDD[(String, Int)] = {
 
-      val targetDateEpoch = targetDate.getMillis()/1000
-      println("TARGET DATE: " + targetDate)
+    val targetDateEpoch = targetDate.getMillis()/1000
+
+    println("Ingesting for date: " +
+      DateTimeFormat.forPattern("yyyy-MM-dd").print(targetDate) +
+      " (" + targetDateEpoch + ")"
+    )
 
     // Read & Parse JSON files into Packages.
     // TODO: Ignore empty files needed?
@@ -204,13 +208,14 @@ object Ingestor {
 
     // Write result to DB.
     if (save_to_db == true){
+      //val date:String = DateTimeFormat.forPattern("yyyy-MM-dd").print(targetDate)
       result.foreachPartition { (partition) =>
         partition.foreach { case (name, count) =>
           using (DB (DriverManager .getConnection (db_jdbc, db_username, db_password))) {db =>
             db.localTx { implicit session =>
               sql"""
                insert into liberator_nodejs (package_id, usage_date, usage_count)
-               values (${name}, current_timestamp, ${count})
+               values (${name}, ${targetDate}, ${count})
                """
                .update.apply()
             }
