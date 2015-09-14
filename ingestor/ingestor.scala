@@ -61,8 +61,7 @@ object Ingestor {
       .wholeTextFiles(source + file_regex)
       .filter{ case (filename,filecontent) => filecontent != "" } // Skip empty files.
       .map(json  =>  { parse(json._2) })                          // Discard filename.
-      .map(json  =>  json.extract[ List[PackageJson] ])
-      .flatMap(identity)
+      .map(json  =>  json.extract[ PackageJson ])
       .cache
 
     // Generate Vertex RDD.

@@ -13,7 +13,6 @@ import org.apache.spark.rdd.RDD
 import com.liberator.PackageJson._
 
 // Converts NodeJS 'package.json' files into Liberator PackageJson's (aka. RepDep files).
-// TODO: Merge outputs by package?
 object Reformer {
 
   implicit lazy val formats = org.json4s.DefaultFormats
@@ -118,7 +117,8 @@ object Reformer {
     allDepsFrom.foreach {
       case (name,version) =>
         if ( allDepsTo.contains(name) && allDepsFrom.get(name) != allDepsTo.get(name) ) {
-          updatedDeps = Dependency(name, List(Event(version, "updated", timestamp, commit ))) :: updatedDeps
+          val updated_version:String = allDepsTo.get(name).get
+          updatedDeps = Dependency(name, List(Event(updated_version, "updated", timestamp, commit ))) :: updatedDeps
         }
     }
 
@@ -158,10 +158,26 @@ object Reformer {
     return (repoName, (timestamp, commit, data))
   }
 
-  def run(sc : SparkContext,
+  // From:  RDD[(String,Iterable[PackageJson])]
+  // To  :  RDD[Iterable[PackageJson]]
+  def shmoosh(packages: org.apache.spark.rdd.RDD[(String,Iterable[PackageJson])]):
+    org.apache.spark.rdd.RDD[PackageJson] = {
+    packages.map{ case (pkg_name, pkges) =>
+      pkges
+    }
+    .flatMap(identity)  // RDD[PackageJson]
+    .groupBy(_.name)    // Map[String,Iterable[PackageJson]]
+    .mapValues(_.reduce(PackageJsonUtil.addPackageJson))
+    .values
+    .sortBy(_.name) // Too slow?
+  }
+
+  def run(
+    sc : SparkContext,
     source:String = "../crawler/output/repos/raw/github",
     file_regex:String = "/*/*/package_*.json",
-    output_dir:String = "") : org.apache.spark.rdd.RDD[Iterable[PackageJson]] = {
+    output_dir:String = ""
+  ) : org.apache.spark.rdd.RDD[PackageJson] = {
 
     // Read & Parse JSON files into NodeJS Packages.
     val nodefiles: org.apache.spark.rdd.RDD[(String,Iterable[(String,String,String)])] =
@@ -173,16 +189,16 @@ object Reformer {
     val first : Iterable[((String,String,String),(String,String,String))] = Iterable((f,f))
     val packages: org.apache.spark.rdd.RDD[(String,Iterable[PackageJson])] = {
       nodefiles.map{ case (repoName, repoTripletPair) =>  // (repoName, (timestamp, commit, data))
-        (repoName, ( first ++ repoTripletPair.zip(repoTripletPair.tail)).zipWithIndex.flatMap{
-          case ((prev,cur), index) => node2package(prev, cur, index)
-        })
+        (repoName, ( first ++ repoTripletPair.zip(repoTripletPair.tail))
+          .zipWithIndex
+          .flatMap{ case ((prev,cur), index) =>
+            node2package(prev, cur, index)
+          }
+        )
       }
     }
 
-    val output = packages
-      .map{ case (pname, iterable) => iterable.map{
-        case (pack) => pack
-      }}
+    val output = shmoosh(packages)
 
     if (output_dir != ""){
       output
@@ -191,8 +207,7 @@ object Reformer {
     }
 
     println("Reformed " + packages.count.toString + " packages.")
-
-    return output
+    output
   }
 
   def main(args: Array[String]) {
