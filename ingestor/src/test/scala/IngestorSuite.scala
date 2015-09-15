@@ -26,7 +26,7 @@ class IngestorSuite extends FunSuite with LocalSparkContext {
   private def getIngestedDeps(sc: SparkContext, source: String, regex: String, time: org.joda.time.DateTime)
     : Map[String, Int] = {
       return Ingestor.run(
-        sc = sc, source = source, file_regex = regex, targetDate = time,
+        sc = sc, source = source, file_regex = regex, startDate = time,
         output_dir = "", save_to_db = false, debug = false
       ).collect.toMap
   }

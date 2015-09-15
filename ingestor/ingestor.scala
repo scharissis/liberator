@@ -42,18 +42,13 @@ object Ingestor {
     sc : SparkContext,
     source:String = "../reformer/output",
     file_regex:String = "/part-*",
-
-    targetDate:DateTime = DateTime.yesterday.withTimeAtStartOfDay(),
+    startDate:DateTime = DateTime.yesterday.withTimeAtStartOfDay(),
+    days_back:Int = 3,
     output_dir:String = "",
     save_to_db:Boolean = true,
     debug:Boolean = false) : org.apache.spark.rdd.RDD[(String, Int)] = {
 
-    val targetDateEpoch = targetDate.getMillis()/1000
-
-    println("Ingesting for date: " +
-      DateTimeFormat.forPattern("yyyy-MM-dd").print(targetDate) +
-      " (" + targetDateEpoch + ")"
-    )
+    println("Ingesting from " + startDate + " for last " + days_back.toString + " days...")
 
     // Read & Parse JSON files into Packages.
     // TODO: Ignore empty files needed?
@@ -141,13 +136,6 @@ object Ingestor {
         }
       )
 
-    if (debug) {
-      println("Target date: " + targetDate + " (" + targetDateEpoch + ")")
-      for {
-        (pkg,dep,range) <- edges_tmp_stitched
-      } println(pkg + "\n - Dep: " + dep + "\n - Range: [" + range.start + " ... " + range.end + "] (" + range.contains(targetDateEpoch) + ")\n" )
-    }
-
     val edges: org.apache.spark.rdd.RDD[Edge[Range]] = edges_tmp_stitched
       .map { case (pkg, dep, range) =>
         Edge(hash(pkg.name), hash(dep.name), range )
@@ -155,6 +143,7 @@ object Ingestor {
 
     // Build a directed multi-Graph.
     val graph: Graph[String, Range] = Graph(vertices, edges)
+    graph.vertices.cache()
 
     if (debug) {
       // Neo4J Debug Graph
@@ -170,73 +159,87 @@ object Ingestor {
         .saveAsTextFile("test/debug/output/dependencies.csv")
     }
 
-    // Obtain dependency subgraph.
-    val subgraph = graph.subgraph(
-      // Example vertex predicatre:  vpred = (verexId,vd) => vd == "grunt",
-      epred = e => e.attr.contains(targetDateEpoch)
-    ).cache()
+    var target_date_result: org.apache.spark.rdd.RDD[(String, Int)] =
+      sc.parallelize(List(("error",0)))
 
-    if (debug) {
-      println("The graph size: " + graph.vertices.count + " | " + graph.edges.count)
-      println("Subgraph size: " + subgraph.vertices.count + " verts | " + subgraph.edges.count + " edges")
-    }
+    // Create a subgraph and ingest, going back N days.
+    for (days <- Iterator.range(0,days_back)) {
+      val targetDate = startDate - days.days
+      val targetDateEpoch = targetDate.getMillis()/1000
+      println("Ingesting for date: " +
+        DateTimeFormat.forPattern("yyyy-MM-dd").print(targetDate) +
+        " (" + targetDateEpoch + ")"
+      )
 
-    // Get the inDegree RDD, including the zeroes,
-    val inDegreeGraph = graph.vertices.leftJoin(subgraph.inDegrees) {
-      (vId, attr, inDegOpt) => inDegOpt.getOrElse(0)
-    }
+      // Obtain dependency subgraph.
+      val subgraph = graph.subgraph(
+        // Example vertex predicate:  vpred = (verexId,vd) => vd == "grunt",
+        epred = e => e.attr.contains(targetDateEpoch)
+      ).cache()
 
-    // Translate vertexId's back to String's.
-    val result: org.apache.spark.rdd.RDD[(String, Int)] = subgraph.vertices.innerJoin(inDegreeGraph){
-      (id, name, indegree) => (name, indegree)
-    }.map{ case (id, (name, indegree)) => (name, indegree) }.filter{ x => x._1 != "null"}
+      if (debug) {
+        println("The graph size: " + graph.vertices.count + " | " + graph.edges.count)
+        println("Subgraph size: " + subgraph.vertices.count + " verts | " + subgraph.edges.count + " edges")
+      }
 
-    if (debug) {
-      println("SUBGRAPH.vertices:")
-      subgraph.vertices.foreach { println }
-      println("inDegreeGraph:")
-      inDegreeGraph.foreach { println }
-      println("RESULT:")
-      result.foreach { println }
-    }
+      // Get the inDegree RDD, including the zeroes,
+      val inDegreeGraph = graph.vertices.leftJoin(subgraph.inDegrees) {
+        (vId, attr, inDegOpt) => inDegOpt.getOrElse(0)
+      }
 
-    // Write result to file.
-    if (output_dir != ""){
-      result.saveAsTextFile(output_dir)
-    }
+      // Translate vertexId's back to String's.
+      val result: org.apache.spark.rdd.RDD[(String, Int)] = subgraph.vertices.innerJoin(inDegreeGraph){
+        (id, name, indegree) => (name, indegree)
+      }.map{ case (id, (name, indegree)) => (name, indegree) }.filter{ x => x._1 != "null"}
 
-    // Write result to DB.
-    if (save_to_db == true){
-      //val date:String = DateTimeFormat.forPattern("yyyy-MM-dd").print(targetDate)
-      result.foreachPartition { (partition) =>
-        partition.foreach { case (name, count) =>
-          using (DB (DriverManager .getConnection (db_jdbc, db_username, db_password))) {db =>
-            db.localTx { implicit session =>
-              sql"""
-               insert into liberator_nodejs (package_id, usage_date, usage_count)
-               values (${name}, ${targetDate}, ${count})
-               """
-               .update.apply()
+      if (days==0) target_date_result = result
+
+      if (debug) {
+        println("SUBGRAPH.vertices:")
+        subgraph.vertices.foreach { println }
+        println("inDegreeGraph:")
+        inDegreeGraph.foreach { println }
+        println("RESULT:")
+        result.foreach { println }
+      }
+
+      // Write result to file.
+      if (output_dir != ""){
+        // TODO: Multi-day write to file.
+        result.saveAsTextFile(output_dir)
+      }
+
+      // Write result to DB.
+      if (save_to_db == true){
+        result.foreachPartition { (partition) =>
+          partition.foreach { case (name, count) =>
+            using (DB (DriverManager .getConnection (db_jdbc, db_username, db_password))) {db =>
+              db.localTx { implicit session =>
+                sql"""
+                 insert into liberator_nodejs (package_id, usage_date, usage_count)
+                 values (${name}, ${targetDate}, ${count})
+                 """
+                 .update.apply()
+              }
             }
           }
         }
       }
-    }
 
-    if (debug) {
-      println("Completed ingestion for timestamp: " +
-        DateTimeFormat.forPattern("yyyy-MM-dd").print(targetDate) +
-        " (" + targetDateEpoch + ")"
-      )
+      if (debug) {
+        println("Completed ingestion for timestamp: " +
+          DateTimeFormat.forPattern("yyyy-MM-dd").print(targetDate) +
+          " (" + targetDateEpoch + ")"
+        )
+      }
     }
-
-    return result
+    target_date_result
   }
 
   def main(args: Array[String]) {
     val conf = new SparkConf().setAppName("Liberator Ingestor").setMaster("local[2]")
     val sc = new SparkContext(conf)
 
-    val _ = run(sc, output_dir = "output", debug = true)
+    val _ = run(sc, output_dir = "", days_back = 21, debug = false)
   }
 }
