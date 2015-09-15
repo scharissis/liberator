@@ -20,11 +20,14 @@ build: clean
 	@echo ""
 
 db:
-	PGPASSWORD=liberator psql -h 127.0.0.1 -a -f create_tables.sql liberator_test liberator
+	PGPASSWORD=liberator psql -h 127.0.0.1 -a -f db/create_tables.sql liberator_test liberator
+
+db_backup:
+	PGPASSWORD=liberator pg_dump -h localhost -U liberator liberator_test > db/dumps/liberator_test_`date +%Y%m%d`.dump
 
 report: default
 	@echo "[make] REPORTING..."
-	PGPASSWORD=liberator psql -h 127.0.0.1 -a -f get_data.sql liberator_test liberator
+	PGPASSWORD=liberator psql -h 127.0.0.1 -a -f db/get_data.sql liberator_test liberator
 	@echo ""
 
 debug: report
