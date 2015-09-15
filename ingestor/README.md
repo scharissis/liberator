@@ -6,15 +6,20 @@ number of dependencies for each package.
 
 Dependencies
 ==
-* Scala <br/>
+* Scala (Tested with 2.10.5)<br/>
   `sudo apt-get install scala`
 
 * Scala SBT <br/>
   http://www.scala-sbt.org/download.html
 
-* Apache Spark <br/>
+* SBT 'Assembly Plugin'
+  https://github.com/sbt/sbt-assembly
 
-* Neo4J (v2.2.0+) (for development debugging only)
+* Java 7 (Tested with OpenJDK 7)
+
+* Apache Spark (Tested with 1.5)<br/>
+
+* Neo4J (v2.2.0+) (optional; for development debugging only)
 
 Build
 ==
