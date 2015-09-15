@@ -35,6 +35,9 @@ debug: report
 	./test/debug/neo4j.sh
 	@echo ""
 
+cluster:
+	./spark-ec2 --key-pair=x1c --identity-file=~/.ssh/x1c.pem --region=ap-southeast-2 --zone=ap-southeast-2a -s 3 launch liberator-cluster
+
 test: clean
 	@echo "[make] TESTING..."
 	sbt test
