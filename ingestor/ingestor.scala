@@ -43,6 +43,7 @@ object Ingestor {
     source:String = "../reformer/output",
     file_regex:String = "/part-*",
     startDate:DateTime = DateTime.yesterday.withTimeAtStartOfDay(),
+    //startDate:DateTime = new DateTime("2015-08-26").withTimeAtStartOfDay(),
     days_back:Int = 3,
     output_dir:String = "",
     save_to_db:Boolean = true,
@@ -237,9 +238,9 @@ object Ingestor {
   }
 
   def main(args: Array[String]) {
-    val conf = new SparkConf().setAppName("Liberator Ingestor").setMaster("local[2]")
+    val conf = new SparkConf().setAppName("Liberator Ingestor").setMaster("local[3]")
     val sc = new SparkContext(conf)
 
-    val _ = run(sc, output_dir = "", days_back = 21, debug = false)
+    val _ = run(sc, output_dir = "", days_back = 1, debug = false)
   }
 }
