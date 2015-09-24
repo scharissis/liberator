@@ -13,7 +13,7 @@ libraryDependencies ++= Seq(
   "com.h2database"          % "h2"              % "1.4.182",
   "ch.qos.logback"          % "logback-classic" % "1.1.2",
   "com.github.nscala-time"  %% "nscala-time"    % "1.6.0",
-  "org.scalatest"           % "scalatest_2.10"  % "2.0"     % "test"
+  "org.scalatest"           % "scalatest_2.10"  % "2.2.1"   % "test"
 )
 
 test in assembly := {}
