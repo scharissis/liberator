@@ -1,0 +1,27 @@
+{
+  "name": "package.json",
+  "path": "package.json",
+  "sha": "66fcb88a28f76add6461da063f6bf24ee8a5df2c",
+  "size": 732,
+  "url": "https://api.github.com/repos/mbostock/d3/contents/package.json?ref=dd2a424f2bdb8fae1dab5ac27168f5bba186a0c4",
+  "html_url": "https://github.com/mbostock/d3/blob/dd2a424f2bdb8fae1dab5ac27168f5bba186a0c4/package.json",
+  "git_url": "https://api.github.com/repos/mbostock/d3/git/blobs/66fcb88a28f76add6461da063f6bf24ee8a5df2c",
+  "download_url": "https://raw.githubusercontent.com/mbostock/d3/dd2a424f2bdb8fae1dab5ac27168f5bba186a0c4/package.json",
+  "type": "file",
+  "content": "ewogICJ2ZXJzaW9uIjogIjIuOS4yIiwgCiAgInJlcG9zaXRvcnkiOiB7CiAgICAidXJsIjogImh0dHA6Ly9naXRodWIuY29tL21ib3N0b2NrL2QzLmdpdCIsIAogICAgInR5cGUiOiAiZ2l0IgogIH0sIAogICJhdXRob3IiOiB7CiAgICAidXJsIjogImh0dHA6Ly9ib3N0Lm9ja3Mub3JnL21pa2UiLCAKICAgICJuYW1lIjogIk1pa2UgQm9zdG9jayIKICB9LCAKICAiaG9tZXBhZ2UiOiAiaHR0cDovL21ib3N0b2NrLmdpdGh1Yi5jb20vZDMvIiwgCiAgImRlc2NyaXB0aW9uIjogIkEgc21hbGwsIGZyZWUgSmF2YVNjcmlwdCBsaWJyYXJ5IGZvciBtYW5pcHVsYXRpbmcgZG9jdW1lbnRzIGJhc2VkIG9uIGRhdGEuIiwgCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJqc2RvbSI6ICIwLjIuMTQiLCAKICAgICJzaXp6bGUiOiAiMS4xLngiLCAKICAgICJuZXdfb25lIjogIjAuMC4xIgogIH0sIAogICJzY3JpcHRzIjogewogICAgInRlc3QiOiAiLi9ub2RlX21vZHVsZXMvdm93cy9iaW4vdm93cyIKICB9LCAKICAia2V5d29yZHMiOiBbCiAgICAiZG9tIiwgCiAgICAidzNjIiwgCiAgICAidmlzdWFsaXphdGlvbiIsIAogICAgInN2ZyIsIAogICAgImFuaW1hdGlvbiIsIAogICAgImNhbnZhcyIKICBdLCAKICAiZGV2RGVwZW5kZW5jaWVzIjogewogICAgInVnbGlmeS1qcyI6ICIxLjIuMyIsIAogICAgInZvd3MiOiAiMC42LngiCiAgfSwgCiAgIm1haW4iOiAiaW5kZXguanMiLCAKICAiYnJvd3NlcmlmeSI6ICJpbmRleC1icm93c2VyaWZ5LmpzIiwgCiAgIm5hbWUiOiAiZDMiCn0=",
+  "encoding": "base64",
+  "_links": {
+    "self": "https://api.github.com/repos/mbostock/d3/contents/package.json?ref=dd2a424f2bdb8fae1dab5ac27168f5bba186a0c4",
+    "git": "https://api.github.com/repos/mbostock/d3/git/blobs/66fcb88a28f76add6461da063f6bf24ee8a5df2c",
+    "html": "https://github.com/mbostock/d3/blob/dd2a424f2bdb8fae1dab5ac27168f5bba186a0c4/package.json"
+  },
+  "meta": {
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "1953",
+    "x-ratelimit-reset": "1420720517",
+    "x-oauth-scopes": "gist, notifications, read:org, read:public_key, read:repo_hook, repo, user",
+    "last-modified": "Wed, 16 May 2012 16:57:18 GMT",
+    "etag": "\"371024270d6c38245475aff9614f331e\"",
+    "status": "200 OK"
+  }
+}
