@@ -23,6 +23,15 @@ Dependencies
 
 Build
 ==
+
+First time setup script:
+
+```
+bash db/setup.sh
+```
+
+Regular workflow:
+
 ```
 make
 ```
