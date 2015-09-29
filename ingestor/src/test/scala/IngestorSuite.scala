@@ -15,9 +15,9 @@ class IngestorSuite extends FunSuite with LocalSparkContext {
 
   val test_source = "src/test/resources/"
 
-  private def newSparkContext(): SparkContext = {
+  private def newSparkContext(master:String = "local[2]"): SparkContext = {
     val conf = new SparkConf()
-      .setMaster("local")
+      .setMaster(master)
       .setAppName("test")
     val sc = new SparkContext(conf)
     sc
