@@ -20,11 +20,22 @@ import com.liberator.PackageJson._
 // Output: Files containing number of dependencies per package.
 object Ingestor {
   Class.forName("org.postgresql.Driver")
-  val db_name="liberator_test"
+
+  val db_name="liberator"
   val db_url = "localhost:5432"
   val db_jdbc = "jdbc:postgresql://"+ db_url + "/" + db_name
   val db_username = "liberator"
   val db_password = "liberator"
+  val db_table = "liberator_nodejs"
+
+  ConnectionPool.singleton(db_jdbc, db_username, db_password)
+  val settings = ConnectionPoolSettings(
+    initialSize = 5,
+    maxSize = 20,
+    connectionTimeoutMillis = 3000L,
+    validationQuery = "select 1"
+  )
+  ConnectionPool.add('default, db_jdbc, db_username, db_password, settings)
 
   implicit val formats = org.json4s.DefaultFormats
 
@@ -214,7 +225,7 @@ object Ingestor {
       if (save_to_db == true){
         result.foreachPartition { (partition) =>
           partition.foreach { case (name, count) =>
-            using (DB (DriverManager .getConnection (db_jdbc, db_username, db_password))) {db =>
+            using (DB (DriverManager .getConnection (db_jdbc, db_username, db_password))) { db =>
               db.localTx { implicit session =>
                 sql"""
                  insert into liberator_nodejs (package_id, usage_date, usage_count)
@@ -237,10 +248,16 @@ object Ingestor {
     target_date_result
   }
 
+  def getOldestDate()(implicit session: DBSession = ReadOnlyAutoSession) =
+    sql"SELECT min(usage_date) from liberator_nodejs"
+    .map( rs => rs.date("min") ).single.apply()
+
   def main(args: Array[String]) {
-    val conf = new SparkConf().setAppName("Liberator Ingestor").setMaster("local[3]")
+    val conf = new SparkConf().setAppName("Liberator Ingestor").setMaster("local[1]")
     val sc = new SparkContext(conf)
 
-    val _ = run(sc, output_dir = "", days_back = 1, debug = false)
+    val oldest_date = (new DateTime(getOldestDate().get) - 1.days).withTimeAtStartOfDay()
+
+    val _ = run(sc, output_dir = "", startDate = oldest_date, days_back = 365, debug = false)
   }
 }

@@ -1,5 +1,5 @@
-DROP TABLE liberator_nodejs;
-
+/*DROP TABLE IF EXISTS liberator_nodejs;
+*/
 CREATE TABLE liberator_nodejs (
 	package_id text,
 	usage_date DATE,

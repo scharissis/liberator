@@ -1,9 +1,12 @@
+# Due to a bug in SPARK, I've included the postgres JAR 3 ways. Only '--jars' should be required.
+# Possibly related: https://github.com/apache/spark/pull/5782
 default: db build
 	@echo "[make] RUNNING..."
-	spark-submit \
+	SPARK_CLASSPATH=`find ~/.ivy2 -iname "*postgresql-9*.jar" | head -1` spark-submit \
 		--class "com.liberator.Ingestor" \
 		target/scala-2.10/Ingestor-assembly-1.0.jar \
-		--jar lib/postgresql-9.3-1102-jdbc41.jar
+		--jars `find ~/.ivy2 -iname "*postgresql-9*.jar" | head -1` \
+		--driver-class-path `find ~/.ivy2 -iname "*postgresql-9*.jar" | head -1`
 	@echo ""
 
 build: clean
@@ -12,7 +15,7 @@ build: clean
 	@echo ""
 
 db:
-	PGPASSWORD=liberator psql -h 127.0.0.1 -a -f db/create_tables.sql liberator_test liberator
+	PGPASSWORD=liberator psql -h 127.0.0.1 -a -f db/create_tables.sql liberator liberator
 
 db_backup:
 	PGPASSWORD=liberator pg_dump -h localhost -U liberator liberator_test > db/dumps/liberator_test_`date +%Y%m%d`.dump
@@ -39,3 +42,5 @@ clean:
 	rm -rf output
 	rm -rf test/debug/output
 	@echo ""
+
+.PHONY: clean db db_backup debug cluster test

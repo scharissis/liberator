@@ -8,7 +8,7 @@ log = require './log'
 config = require './config'
 
 pg = require 'pg'
-db_conn = "postgres://liberator:liberator@localhost:5432/liberator_test"
+db_conn = "postgres://liberator:liberator@localhost:5432/liberator"
 
 app = express()
 app.disable 'x-powered-by'
