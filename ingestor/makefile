@@ -1,4 +1,4 @@
-`# Due to a bug in SPARK, I've included the postgres JAR 3 ways. Only '--jars' should be required.
+# Due to a bug in SPARK, I've included the postgres JAR 3 ways. Only '--jars' should be required.
 # Possibly related: https://github.com/apache/spark/pull/5782
 default: db_setup build
 	@echo "[make] RUNNING..."
