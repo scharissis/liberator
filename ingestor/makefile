@@ -34,8 +34,22 @@ debug: report
 	./test/debug/neo4j.sh
 	@echo ""
 
-cluster:
-	./spark-ec2 --key-pair=x1c --identity-file=~/.ssh/x1c.pem --region=ap-southeast-2 --zone=ap-southeast-2a -s 3 launch liberator-cluster
+cluster_create:
+	spark-ec2 --key-pair=x1c --identity-file=${HOME}/.ssh/x1c.pem --region=ap-southeast-2 --vpc-id=vpc-66932e0f --hadoop-major-version=2  -s 1 --copy-aws-credentials launch liberator-cluster
+
+cluster_destroy:
+	spark-ec2 --key-pair=x1c --identity-file=${HOME}/.ssh/x1c.pem --region=ap-southeast-2 --zone=ap-southeast-2a --delete-groups destroy liberator-cluster
+
+cluster_submit: build
+	spark-submit \
+		--master "spark://`spark-ec2 --key-pair=x1c --identity-file=${HOME}/.ssh/x1c.pem --region=ap-southeast-2 --zone=ap-southeast-2a get-master liberator-cluster | tail -1`:6066" \
+		--class "com.liberator.Ingestor" \
+		--deploy-mode client \
+		--executor-memory 2G \
+		--total-executor-cores 4 \
+		target/scala-2.10/Ingestor-assembly-1.0.jar \
+		--jar lib/postgresql-9.3-1102-jdbc41.jar \
+		--verbose
 
 test: clean
 	@echo "[make] TESTING..."
