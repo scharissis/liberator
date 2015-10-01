@@ -1,6 +1,6 @@
-# Due to a bug in SPARK, I've included the postgres JAR 3 ways. Only '--jars' should be required.
+`# Due to a bug in SPARK, I've included the postgres JAR 3 ways. Only '--jars' should be required.
 # Possibly related: https://github.com/apache/spark/pull/5782
-default: db build
+default: db_setup build
 	@echo "[make] RUNNING..."
 	SPARK_CONF_DIR="${PWD}/conf" \
 	SPARK_CLASSPATH=`find ~/.ivy2 -iname "*postgresql-9*.jar" | head -1` spark-submit \
@@ -15,8 +15,11 @@ build: clean
 	sbt assembly
 	@echo ""
 
-db:
+db_setup:
 	PGPASSWORD=liberator psql -h 127.0.0.1 -a -f db/create_tables.sql liberator liberator
+
+db_setup_remote:
+	PGPASSWORD=liberator psql -h liberator-nodejs.cdbg1ygg3fjy.ap-southeast-2.rds.amazonaws.com -a -f db/create_tables.sql nodejs liberator
 
 db_backup:
 	PGPASSWORD=liberator pg_dump -h localhost -U liberator liberator > db/dumps/liberator_`date +%Y%m%d`.dump
@@ -45,3 +48,4 @@ clean:
 	@echo ""
 
 .PHONY: clean db db_backup debug cluster test
+`
