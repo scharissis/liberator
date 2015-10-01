@@ -54,7 +54,6 @@ object Ingestor {
     source:String = "../reformer/output",
     file_regex:String = "/part-*",
     startDate:DateTime = DateTime.yesterday.withTimeAtStartOfDay(),
-    //startDate:DateTime = new DateTime("2015-08-26").withTimeAtStartOfDay(),
     days_back:Int = 3,
     output_dir:String = "",
     save_to_db:Boolean = true,
@@ -80,13 +79,15 @@ object Ingestor {
 
     if (debug) {
       println("VERTICES: " + vertices.count)
-      println("VERTICES: " + vertices.collect)
+      for {
+        vert <- vertices.collect.toList
+      } println(vert)
 
       println("PACKAGES: ")
       for {
           pac <- packages
       } if ( pac.dependencies.size > -1) println(" - " + pac.name + ": " + pac.dependencies.size + " dependencies.")
-
+      /*
       println("DEPENDENCIES: ")
       for {
           pac <- packages
@@ -105,6 +106,7 @@ object Ingestor {
           dep <- pac.dependencies
           pair <- dep.usage.zip(dep.usage.tail)  // empty if dep.usage.count < 2
       } println("pair: " + pair) // Pair(e1,e2)
+      */
     }
 
     // Generate Edge RDD.
@@ -253,11 +255,10 @@ object Ingestor {
     .map( rs => rs.date("min") ).single.apply()
 
   def main(args: Array[String]) {
-    val conf = new SparkConf().setAppName("Liberator Ingestor").setMaster("local[1]")
+    val conf = new SparkConf().setAppName("Liberator Ingestor").setMaster("local[2]")
     val sc = new SparkContext(conf)
 
-    val oldest_date = (new DateTime(getOldestDate().get) - 1.days).withTimeAtStartOfDay()
-
-    val _ = run(sc, output_dir = "", startDate = oldest_date, days_back = 365, debug = false)
+    val oldest_date = (new DateTime(getOldestDate().getOrElse(DateTime.yesterday.withTimeAtStartOfDay()))).withTimeAtStartOfDay()
+    val _ = run(sc, output_dir = "", startDate = oldest_date, days_back = 30, save_to_db = true, debug = false)
   }
 }
