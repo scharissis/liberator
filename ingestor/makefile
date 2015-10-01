@@ -15,6 +15,9 @@ build: clean
 	sbt assembly
 	@echo ""
 
+db_clean:
+	PGPASSWORD=liberator psql -h 127.0.0.1 -a -f db/drop_tables.sql liberator liberator
+
 db_setup:
 	PGPASSWORD=liberator psql -h 127.0.0.1 -a -f db/create_tables.sql liberator liberator
 
