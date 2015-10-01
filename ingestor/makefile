@@ -2,6 +2,7 @@
 # Possibly related: https://github.com/apache/spark/pull/5782
 default: db build
 	@echo "[make] RUNNING..."
+	SPARK_CONF_DIR="${PWD}/conf" \
 	SPARK_CLASSPATH=`find ~/.ivy2 -iname "*postgresql-9*.jar" | head -1` spark-submit \
 		--class "com.liberator.Ingestor" \
 		target/scala-2.10/Ingestor-assembly-1.0.jar \
