@@ -19,11 +19,13 @@ object Reformer {
 
   def decodeBase64(data: String) : String = {
     val bytes = new sun.misc.BASE64Decoder().decodeBuffer(data)
-    return bytes.map(_.toChar).mkString
+    bytes.map(_.toChar).mkString
   }
 
   // cur/prev: (timestamp, commit, data)
   def node2package( prev: (String,String,String), cur: (String,String,String), index: Int) : List[PackageJson] = {
+    val debug = false
+
     val timestamp = cur._1
     val commit = cur._2
     val fromFile = prev._3
@@ -36,38 +38,38 @@ object Reformer {
       case JNothing => "unknown"
       case default => default.extract[String]
     }
+
     var url = "failed-to-parse-url"
     scala.util.control.Exception.ignoring(classOf[Exception]) { // Ignore ALL Exceptions!
       url = (parsedToFile \ "url").extract[String]
     }
-    val decodedContentFrom : String = decodeBase64(
-      ( parsedFromFile \ "content" ) match {
+
+    val decodedContentFrom : String = decodeBase64( ( parsedFromFile \ "content" ) match {
         case JNothing => "Failed to decode content."
         case default => default.extract[String]
-      }
-    )
-    val decodedContentTo : String = decodeBase64(
-      ( parsedToFile \ "content" ) match {
+      })
+    val decodedContentTo : String = decodeBase64( (parsedToFile \ "content" ) match {
         case JNothing => "Failed to decode content."
         case default => default.extract[String]
-      }
-    )
+      })
 
     var parsedPackageFrom: org.json4s.JValue = org.json4s.JNothing
     try{
       parsedPackageFrom = parse(decodedContentFrom)
     } catch { // Bad JSON
-      case e: Exception => println("Warning: Failed to parse content of decodedContentFrom " + url + " (commit: "+commit+"):\n" + e
-        + "\n --- File Contents (Decoded) ---\n" + decodedContentFrom + "\n ------------------")
-      return List(PackageJson("ERROR","", List[Dependency]()))
+      case e: Exception => if (debug) { println("Warning: Failed to parse content of decodedContentFrom " + url + " (commit: "+commit+"):\n" + e
+        + "\n --- File Contents (Decoded) ---\n" + decodedContentFrom + "\n ------------------") }
     }
     var parsedPackageTo: org.json4s.JValue = org.json4s.JNothing
     try{
       parsedPackageTo = parse(decodedContentTo)
     } catch { // Bad JSON
-      case e: Exception => println("Warning: Failed to parse content of decodedContentTo " + url + " (commit: "+commit+"):\n" + e
-        + "\n --- File Contents (Decoded) ---\n" + decodedContentTo + "\n ------------------")
-      return List(PackageJson("ERROR","", List[Dependency]()))
+      case e: Exception => if (debug) { println("Warning: Failed to parse content of decodedContentTo " + url + " (commit: "+commit+"):\n" + e
+        + "\n --- File Contents (Decoded) ---\n" + decodedContentTo + "\n ------------------") }
+    }
+
+    if ( parsedPackageFrom  == org.json4s.JNothing || parsedPackageTo  == org.json4s.JNothing) {
+      return List()
     }
 
     // Dependencies are of the form: 'gruntjs': '0.4.2'
@@ -116,7 +118,7 @@ object Reformer {
     var updatedDeps : List[Dependency] = List[Dependency]()
     allDepsFrom.foreach {
       case (name,version) =>
-        if ( allDepsTo.contains(name) && allDepsFrom.get(name) != allDepsTo.get(name) ) {
+        if ( allDepsTo.contains(name) && (allDepsFrom.get(name) != allDepsTo.get(name)) ) {
           val updated_version:String = allDepsTo.get(name).get
           updatedDeps = Dependency(name, List(Event(updated_version, "updated", timestamp, commit ))) :: updatedDeps
         }
@@ -141,7 +143,7 @@ object Reformer {
       ))
       return firstPackage
     }
-    return packages
+    packages
   }
 
   // Returns: (repoName, (timestamp, commit, data))
@@ -155,7 +157,7 @@ object Reformer {
     val timestamp = (fileList(1).toLong/1000).toString
     val commit = fileList(2).split('.').head
     val data = pair._2
-    return (repoName, (timestamp, commit, data))
+    (repoName, (timestamp, commit, data))
   }
 
   // From:  RDD[(String,Iterable[PackageJson])]
@@ -203,6 +205,7 @@ object Reformer {
     if (output_dir != ""){
       output
       .map( m => pretty(render(Extraction.decompose(m))) )  // To JSON
+      //.coalesce(1,true)                                   // Save as one big file.
       .saveAsTextFile(output_dir)
     }
 
