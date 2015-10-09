@@ -12,6 +12,8 @@ import org.apache.spark.rdd.RDD
 
 import com.liberator.PackageJson._
 
+
+
 // Converts NodeJS 'package.json' files into Liberator PackageJson's (aka. RepDep files).
 object Reformer {
 
@@ -185,13 +187,11 @@ object Reformer {
     val nodefiles: org.apache.spark.rdd.RDD[(String,Iterable[(String,String,String)])] =
       sc.wholeTextFiles(source + file_regex)
       .map(p => splitPath(p))
-      .groupByKey()
+      .groupByKey
 
-    val f : (String,String,String) = nodefiles.first._2.head
-    val first : Iterable[((String,String,String),(String,String,String))] = Iterable((f,f))
     val packages: org.apache.spark.rdd.RDD[(String,Iterable[PackageJson])] = {
-      nodefiles.map{ case (repoName, repoTripletPair) =>  // (repoName, (timestamp, commit, data))
-        (repoName, ( first ++ repoTripletPair.zip(repoTripletPair.tail))
+      nodefiles.map{ case (repoName, tripletIterable) =>  // (repoName, Iterable(timestamp, commit, data))
+        (repoName, ( Iterable((tripletIterable.head, tripletIterable.head)) ++ tripletIterable.zip(tripletIterable.tail)) // Inject a new pair at the front so the first dependency gets marked as 'new'
           .zipWithIndex
           .flatMap{ case ((prev,cur), index) =>
             node2package(prev, cur, index)

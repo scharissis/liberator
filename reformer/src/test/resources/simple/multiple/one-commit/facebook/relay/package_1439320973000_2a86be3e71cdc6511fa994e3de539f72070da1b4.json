@@ -1,0 +1,27 @@
+{
+  "name": "package.json",
+  "path": "package.json",
+  "sha": "232ffa2db07077afd081b9bf9f285339209eb61d",
+  "size": 2296,
+  "url": "https://api.github.com/repos/facebook/relay/contents/package.json?ref=2a86be3e71cdc6511fa994e3de539f72070da1b4",
+  "html_url": "https://github.com/facebook/relay/blob/2a86be3e71cdc6511fa994e3de539f72070da1b4/package.json",
+  "git_url": "https://api.github.com/repos/facebook/relay/git/blobs/232ffa2db07077afd081b9bf9f285339209eb61d",
+  "download_url": "https://raw.githubusercontent.com/facebook/relay/2a86be3e71cdc6511fa994e3de539f72070da1b4/package.json",
+  "type": "file",
+  "content": "ewogICJuYW1lIjogInJlYWN0LXJlbGF5IiwKICAiZGVzY3JpcHRpb24iOiAi\nQSBmcmFtZXdvcmsgZm9yIGJ1aWxkaW5nIGRhdGEtZHJpdmVuIFJlYWN0IGFw\ncGxpY2F0aW9ucy4iLAogICJ2ZXJzaW9uIjogIjAuMS4wIiwKICAia2V5d29y\nZHMiOiBbCiAgICAiZ3JhcGhxbCIsCiAgICAicmVhY3QiLAogICAgInJlbGF5\nIgogIF0sCiAgImxpY2Vuc2UiOiAiQlNELTMtQ2xhdXNlIiwKICAiaG9tZXBh\nZ2UiOiAiaHR0cHM6Ly9mYWNlYm9vay5naXRodWIuaW8vcmVsYXkvIiwKICAi\nYnVncyI6ICJodHRwczovL2dpdGh1Yi5jb20vZmFjZWJvb2svcmVsYXkvaXNz\ndWVzIiwKICAiZmlsZXMiOiBbCiAgICAiTElDRU5TRSIsCiAgICAiUEFURU5U\nUyIsCiAgICAiUkVBRE1FLm1kIiwKICAgICJkaXN0LyIsCiAgICAibGliLyIK\nICBdLAogICJtYWluIjogImxpYi9SZWxheVB1YmxpYy5qcyIsCiAgInJlcG9z\naXRvcnkiOiAiZmFjZWJvb2svcmVsYXkiLAogICJzY3JpcHRzIjogewogICAg\nImJ1aWxkIjogIlsgJCh1bGltaXQgLW4pIC1sdCA0MDk2IF0gJiYgdWxpbWl0\nIC1uIDQwOTY7IGd1bHAiLAogICAgInByZXB1Ymxpc2giOiAibnBtIHJ1biBi\ndWlsZCIsCiAgICAidGVzdCI6ICJOT0RFX0VOVj10ZXN0IGplc3QiCiAgfSwK\nICAiZW5naW5lcyI6IHsKICAgICJub2RlIjogIjAuMTAueCIKICB9LAogICJk\nZXBlbmRlbmNpZXMiOiB7CiAgICAiYmFiZWwtcnVudGltZSI6ICI1LjguMjAi\nLAogICAgImNyYzMyIjogIl4wLjIuMiIsCiAgICAiZmJqcyI6ICIwLjEuMC1h\nbHBoYS43IiwKICAgICJyZWFjdCI6ICJeMC4xNC4wLWJldGEyIiwKICAgICJy\nZWFjdC1zdGF0aWMtY29udGFpbmVyIjogIl4xLjAuMC1hbHBoYS4xIgogIH0s\nCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJiYWJlbC1jb3JlIjogIjUu\nOC4yMSIsCiAgICAiYmFiZWwtbG9hZGVyIjogIjUuMy4yIiwKICAgICJkZWwi\nOiAiXjEuMi4wIiwKICAgICJlbnZpZnkiOiAiXjMuNC4wIiwKICAgICJndWxw\nIjogIl4zLjkuMCIsCiAgICAiZ3VscC1iYWJlbCI6ICJeNS4xLjAiLAogICAg\nImd1bHAtZGVyZXF1aXJlIjogIl4yLjEuMCIsCiAgICAiZ3VscC1mbGF0dGVu\nIjogIl4wLjEuMCIsCiAgICAiZ3VscC1oZWFkZXIiOiAiXjEuMi4yIiwKICAg\nICJndWxwLXV0aWwiOiAiXjMuMC42IiwKICAgICJqZXN0LWNsaSI6ICJeMC40\nLjE2IiwKICAgICJvYmplY3QtYXNzaWduIjogIl4zLjAuMCIsCiAgICAicnVu\nLXNlcXVlbmNlIjogIl4xLjEuMiIsCiAgICAid2VicGFjayI6ICIxLjExLjAi\nLAogICAgIndlYnBhY2stc3RyZWFtIjogIl4yLjEuMCIKICB9LAogICJqZXN0\nIjogewogICAgInJvb3REaXIiOiAiIiwKICAgICJzY3JpcHRQcmVwcm9jZXNz\nb3IiOiAic2NyaXB0cy9qZXN0L3ByZXByb2Nlc3Nvci5qcyIsCiAgICAic2V0\ndXBFbnZTY3JpcHRGaWxlIjogIm5vZGVfbW9kdWxlcy9mYmpzL3NjcmlwdHMv\namVzdC9lbnZpcm9ubWVudC5qcyIsCiAgICAicGVyc2lzdE1vZHVsZVJlZ2lz\ndHJ5QmV0d2VlblNwZWNzIjogdHJ1ZSwKICAgICJtb2R1bGVQYXRoSWdub3Jl\nUGF0dGVybnMiOiBbCiAgICAgICI8cm9vdERpcj4vbGliLyIsCiAgICAgICI8\ncm9vdERpcj4vbm9kZV9tb2R1bGVzLyg/IShmYmpzL2xpYi98cmVhY3QvbGli\nLykpIgogICAgXSwKICAgICJwcmVwcm9jZXNzb3JJZ25vcmVQYXR0ZXJucyI6\nIFsKICAgICAgIjxyb290RGlyPi9ub2RlX21vZHVsZXMvIgogICAgXSwKICAg\nICJ0ZXN0UGF0aERpcnMiOiBbCiAgICAgICI8cm9vdERpcj4vbm9kZV9tb2R1\nbGVzL2ZianMvbGliLyIsCiAgICAgICI8cm9vdERpcj4vbm9kZV9tb2R1bGVz\nL3JlYWN0L2xpYi8iLAogICAgICAiPHJvb3REaXI+L25vZGVfbW9kdWxlcy9y\nZWFjdC1zdGF0aWMtY29udGFpbmVyL2xpYi8iLAogICAgICAiPHJvb3REaXI+\nL3NyYy8iCiAgICBdLAogICAgInVubW9ja2VkTW9kdWxlUGF0aFBhdHRlcm5z\nIjogWwogICAgICAiPHJvb3REaXI+L25vZGVfbW9kdWxlcy9jcmMzMi8iLAog\nICAgICAiPHJvb3REaXI+L25vZGVfbW9kdWxlcy9mYmpzL25vZGVfbW9kdWxl\ncy9jb3JlLWpzLyIsCiAgICAgICI8cm9vdERpcj4vbm9kZV9tb2R1bGVzL2Zi\nanMvbm9kZV9tb2R1bGVzL3Byb21pc2UvIiwKICAgICAgIjxyb290RGlyPi9u\nb2RlX21vZHVsZXMvZmJqcy9saWIvKD8hKEVycm9yVXRpbHMuanMkfGZldGNo\nLmpzJHxmZXRjaFdpdGhSZXRyaWVzLmpzJCkpIiwKICAgICAgIjxyb290RGly\nPi9ub2RlX21vZHVsZXMvcmVhY3QvIiwKICAgICAgIjxyb290RGlyPi9ub2Rl\nX21vZHVsZXMvcmVhY3Qtc3RhdGljLWNvbnRhaW5lci8iCiAgICBdCiAgfQp9\nCg==\n",
+  "encoding": "base64",
+  "_links": {
+    "self": "https://api.github.com/repos/facebook/relay/contents/package.json?ref=2a86be3e71cdc6511fa994e3de539f72070da1b4",
+    "git": "https://api.github.com/repos/facebook/relay/git/blobs/232ffa2db07077afd081b9bf9f285339209eb61d",
+    "html": "https://github.com/facebook/relay/blob/2a86be3e71cdc6511fa994e3de539f72070da1b4/package.json"
+  },
+  "meta": {
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "4104",
+    "x-ratelimit-reset": "1442276328",
+    "x-oauth-scopes": "gist, notifications, read:org, read:public_key, read:repo_hook, repo, user",
+    "last-modified": "Tue, 11 Aug 2015 19:22:53 GMT",
+    "etag": "\"c7fdc5526ddba7462db2dbf6b23fc385\"",
+    "status": "200 OK"
+  }
+}
