@@ -1,0 +1,27 @@
+{
+  "name": "package.json",
+  "path": "package.json",
+  "sha": "c377c5d9eeb618029a935cbc9b49581ac9eda465",
+  "size": 1298,
+  "url": "https://api.github.com/repos/facebook/react-native/contents/package.json?ref=efae175a8e1b05c976cc5a1cbd492da71eb3bb12",
+  "html_url": "https://github.com/facebook/react-native/blob/efae175a8e1b05c976cc5a1cbd492da71eb3bb12/package.json",
+  "git_url": "https://api.github.com/repos/facebook/react-native/git/blobs/c377c5d9eeb618029a935cbc9b49581ac9eda465",
+  "download_url": "https://raw.githubusercontent.com/facebook/react-native/efae175a8e1b05c976cc5a1cbd492da71eb3bb12/package.json",
+  "type": "file",
+  "content": "ewogICJuYW1lIjogInJlYWN0LW5hdGl2ZSIsCiAgInZlcnNpb24iOiAiMC4w\nLjEiLAogICJkZXNjcmlwdGlvbiI6ICJCdWlsZCBuYXRpdmUgYXBwcyB3aXRo\nIFJlYWN0ISIsCiAgInJlcG9zaXRvcnkiOiB7CiAgICAidHlwZSI6ICJnaXQi\nLAogICAgInVybCI6ICJnaXRAZ2l0aHViLmNvbTpmYWNlYm9vay9yZWFjdC1u\nYXRpdmUuZ2l0IgogIH0sCiAgImplc3QiOiB7CiAgICAic2NyaXB0UHJlcHJv\nY2Vzc29yIjogImplc3RTdXBwb3J0L3NjcmlwdFByZXByb2Nlc3MuanMiLAog\nICAgInRlc3RQYXRoSWdub3JlUGF0dGVybnMiOiBbCiAgICAgICIvbm9kZV9t\nb2R1bGVzLyIsCiAgICAgICIvcGFja2FnZXIvIgogICAgXSwKICAgICJ0ZXN0\nRmlsZUV4dGVuc2lvbnMiOiBbImpzIl0KICB9LAogICJzY3JpcHRzIjogewog\nICAgInRlc3QiOiAiamVzdCIsCiAgICAibGludCI6ICJub2RlIGxpbnRlci5q\ncyBFeGFtcGxlcy8iLAogICAgInN0YXJ0IjogIi4vcGFja2FnZXIvcGFja2Fn\nZXIuc2giCiAgfSwKICAiZGVwZW5kZW5jaWVzIjogewogICAgImFic29sdXRl\nLXBhdGgiOiAiMC4wLjAiLAogICAgImJhc2U2MiI6ICIwLjEuMSIsCiAgICAi\nY29ubmVjdCI6ICIyLjguMyIsCiAgICAiZGVidWciOiAifjIuMS4wIiwKICAg\nICJlc3ByaW1hLWZiIjogIjcwMDEuMDAwMS4wMDAwLWRldi1oYXJtb255LWZi\nIiwKICAgICJmcy1leHRyYSI6ICIwLjE1LjAiLAogICAgImpzdHJhbnNmb3Jt\nIjogIjguMi4wIiwKICAgICJtaW1lIjogIjEuMi4xMSIsCiAgICAibW9kdWxl\nLWRlcHMiOiAiMy41LjYiLAogICAgIm5vZGUtaGFzdGUiOiAiMS4yLjYiLAog\nICAgIm5vZGUtc3RhdGljIjogIjAuNy42IiwKICAgICJvcHRpbWlzdCI6ICIw\nLjYuMSIsCiAgICAicGF0aC1pcy1pbnNpZGUiOiAiMS4wLjEiLAogICAgInB1\nbnljb2RlIjogIjEuMi40IiwKICAgICJxIjogIjEuMC4xIiwKICAgICJxcyI6\nICIwLjYuNSIsCiAgICAicmVhY3QtdG9vbHMiOiAiMC4xMi4yIiwKICAgICJy\nZWJvdW5kIjogIjAuMC4xMCIsCiAgICAic2FuZSI6ICIxLjAuMSIsCiAgICAi\nc291cmNlLW1hcCI6ICIwLjEuMzEiLAogICAgInN0YWNrdHJhY2UtcGFyc2Vy\nIjogIjAuMS4xIiwKICAgICJ0aHJvdWdoIjogIjIuMy42IiwKICAgICJ1bmRl\ncnNjb3JlIjogIjEuNy4wIiwKICAgICJ3b3Jkd3JhcCI6ICIwLjAuMiIsCiAg\nICAid29ya2VyLWZhcm0iOiAiMS4xLjAiLAogICAgInlhcmdzIjogIjEuMy4y\nIgogIH0sCiAgImRldkRlcGVuZGVuY2llcyI6IHsKICAgICJqZXN0LWNsaSI6\nICIwLjIuMSIsCiAgICAiZXNsaW50IjogIjAuOS4yIgogIH0KfQo=\n",
+  "encoding": "base64",
+  "_links": {
+    "self": "https://api.github.com/repos/facebook/react-native/contents/package.json?ref=efae175a8e1b05c976cc5a1cbd492da71eb3bb12",
+    "git": "https://api.github.com/repos/facebook/react-native/git/blobs/c377c5d9eeb618029a935cbc9b49581ac9eda465",
+    "html": "https://github.com/facebook/react-native/blob/efae175a8e1b05c976cc5a1cbd492da71eb3bb12/package.json"
+  },
+  "meta": {
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "4153",
+    "x-ratelimit-reset": "1442276328",
+    "x-oauth-scopes": "gist, notifications, read:org, read:public_key, read:repo_hook, repo, user",
+    "last-modified": "Fri, 20 Feb 2015 05:25:11 GMT",
+    "etag": "\"f647788241c71a3f7be8f31e3b38343b\"",
+    "status": "200 OK"
+  }
+}

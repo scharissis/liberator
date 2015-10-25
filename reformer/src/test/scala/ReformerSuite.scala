@@ -35,6 +35,13 @@ class ReformerSuite extends FunSuite with LocalSparkContext with Matchers {
         .map( pair => (pair._1, pair._2.flatMap(identity).toList) )
         .collect
         .toMap
+
+        // Sort the dependency usage events, so the matchers work (sameElementsAs isn't recursive)
+        .mapValues( dep_list =>
+          dep_list.map( d =>
+            Dependency(d.name, d.usage.sortBy( e => e.time ))
+          )
+        )
   }
 
   val test_source = "src/test/resources/"
@@ -428,6 +435,166 @@ class ReformerSuite extends FunSuite with LocalSparkContext with Matchers {
           Dependency("babel-core", List(Event("5.8.21", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
           Dependency("jest-cli", List(Event("^0.4.16", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4")))
         )
+      )
+
+      assert(packages.count === 3)
+
+      dependencies("react-tools") should have size expectedResult("react-tools").size
+      dependencies("react-tools") should contain theSameElementsAs expectedResult("react-tools")
+
+      dependencies("react-native") should have size expectedResult("react-native").size
+      dependencies("react-native") should contain theSameElementsAs expectedResult("react-native")
+
+      dependencies("react-relay") should have size expectedResult("react-relay").size
+      dependencies("react-relay") should contain theSameElementsAs expectedResult("react-relay")
+    }
+  }
+
+  test("multiple packages - multiple commits each") {
+    withSpark(newSparkContext()) { sc =>
+      val packages = getPackages(sc, test_source, "simple/multiple/many-commits/*/*/package*.json")
+      val dependencies = getDependencies(packages)
+
+      val expectedResult : Map[String, List[Dependency]] = Map(
+
+        "react-tools" -> List(
+          // 29 May 2013 19:54:02 GMT
+          Dependency("recast", List(
+            Event("~0.3.3", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"),
+            Event("~0.4.5", "updated", "1370978690", "15360056bdb9299b027740ecf2f96091f0a847cc")  // 11 Jun 2013 19:24:50 GMT
+          )),
+          Dependency("esprima", List(Event("git://github.com/facebook/esprima#fb-harmony", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"))),
+          Dependency("base62", List(Event("~0.1.1", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"))),
+          Dependency("commoner", List(
+            Event("~0.6.8", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"),
+            Event("~0.7.0", "updated", "1370978690", "15360056bdb9299b027740ecf2f96091f0a847cc")  // 11 Jun 2013 19:24:50 GMT
+          )),
+          Dependency("source-map", List(Event("~0.1.22", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"))),
+          Dependency("semver", List(Event(">= 1.1.4", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"))),
+          Dependency("uglify-js", List(Event("~2.3.6", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"))),
+          Dependency("phantomjs", List(Event(">= 1.9.0", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"))),
+          Dependency("grunt-contrib-jshint", List(Event("~0.5.4", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"))),
+          Dependency("gzip-js", List(Event("~0.3.2", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"))),
+          Dependency("grunt-compare-size", List(Event("~0.4.0", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"))),
+          Dependency("grunt-contrib-copy", List(Event("~0.4.1", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"))),
+          Dependency("grunt-contrib-compress", List(Event("~0.5.1", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"))),
+          Dependency("wrapup", List(Event("~0.12.0", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"))),
+          Dependency("optimist", List(Event("~0.4.0", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"))),
+          Dependency("grunt-contrib-clean", List(Event("~0.4.1", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"))),
+          Dependency("grunt", List(Event("~0.4.1", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"))),
+          Dependency("browserify", List(Event("~2.14.2", "new", "1369857242", "75897c2dcd1dd3a6ca46284dd37e13d22b4b16b4"))),
+          Dependency("grunt-cli", List(Event("~0.1.9", "new", "1369869469", "12e1bb1daa256fc27eeb957b841a43751be828ab"))),  // 29 May 2013 23:17:49 GMT
+          Dependency("tmp", List(
+            Event("~0.0.18", "new", "1370010939", "60a6665bbdf5fe5e4c526efe38eb375c54e14aa9"),      // 31 May 2013 14:35:39 GMT
+            Event("~0.0.18", "removed", "1370023060", "0c6bbf275bb14a0b37426a5caf3dfd31753d36f3"),  // 31 May 2013 17:57:40 GMT
+            Event("~0.0.18", "new", "1370040119", "8d259093bf383a1fbbe69eae0fd5c5f615af252b")       // 31 May 2013 22:41:59 GMT
+          ))
+        ),
+
+        "react-native" -> List(
+          Dependency("esprima-fb", List(
+            Event("7001.0001.0000-dev-harmony-fb", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"),
+            Event("7001.0001.0000-dev-harmony-fb", "removed", "1425371406", "668c53ab9cd71c98cf43e781fa1cadd6a7332a59")
+          )),
+          Dependency("through", List(
+            Event("2.3.6", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"),
+            Event("2.3.6", "removed", "1425371406", "668c53ab9cd71c98cf43e781fa1cadd6a7332a59")
+          )),
+          Dependency("connect", List(Event("2.8.3", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"))),
+          Dependency("jstransform", List(
+            Event("8.2.0", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"),
+            Event("10.0.1", "updated", "1425690773", "582c05f4a04040b09b380cc74ea4b7b37bda7ec2")
+          )),
+          Dependency("punycode", List(
+            Event("1.2.4", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"),
+            Event("1.2.4", "removed", "1425371406", "668c53ab9cd71c98cf43e781fa1cadd6a7332a59")
+          )),
+          Dependency("module-deps", List(Event("3.5.6", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"))),
+          Dependency("yargs", List(Event("1.3.2", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"))),
+          Dependency("q", List(Event("1.0.1", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"))),
+          Dependency("base62", List(
+            Event("0.1.1", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"),
+            Event("0.1.1", "removed", "1425371406", "668c53ab9cd71c98cf43e781fa1cadd6a7332a59")
+          )),
+          Dependency("absolute-path", List(Event("0.0.0", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"))),
+          Dependency("source-map", List(Event("0.1.31", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"))),
+          Dependency("react-tools", List(
+            Event("0.12.2", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"),
+            Event("0.13.0-rc2", "updated", "1425690773", "582c05f4a04040b09b380cc74ea4b7b37bda7ec2")
+          )),
+          Dependency("path-is-inside", List(
+            Event("1.0.1", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"),
+            Event("1.0.1", "removed", "1425371406", "668c53ab9cd71c98cf43e781fa1cadd6a7332a59")
+          )),
+          Dependency("rebound", List(
+            Event("0.0.10", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"),
+            Event("0.0.10", "removed", "1425371406", "668c53ab9cd71c98cf43e781fa1cadd6a7332a59")
+          )),
+          Dependency("node-static", List(
+            Event("0.7.6", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"),
+            Event("0.7.6", "removed", "1425371406", "668c53ab9cd71c98cf43e781fa1cadd6a7332a59")
+          )),
+          Dependency("mime", List(
+            Event("1.2.11", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"),
+            Event("1.2.11", "removed", "1425371406", "668c53ab9cd71c98cf43e781fa1cadd6a7332a59")
+          )),
+          Dependency("underscore", List(Event("1.7.0", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"))),
+          Dependency("stacktrace-parser", List(Event("0.1.1", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"))),
+          Dependency("qs", List(
+            Event("0.6.5", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"),
+            Event("0.6.5", "removed", "1425371406", "668c53ab9cd71c98cf43e781fa1cadd6a7332a59")
+          )),
+          Dependency("node-haste", List(
+            Event("1.2.6", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"),
+            Event("1.2.6", "removed", "1425371406", "668c53ab9cd71c98cf43e781fa1cadd6a7332a59")
+          )),
+          Dependency("fs-extra", List(
+            Event("0.15.0", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"),
+            Event("0.15.0", "removed", "1425371406", "668c53ab9cd71c98cf43e781fa1cadd6a7332a59")
+          )),
+          Dependency("sane", List(Event("1.0.1", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"))),
+          Dependency("wordwrap", List(
+            Event("0.0.2", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"),
+            Event("0.0.2", "removed", "1425371406", "668c53ab9cd71c98cf43e781fa1cadd6a7332a59")
+          )),
+          Dependency("optimist", List(Event("0.6.1", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"))),
+          Dependency("debug", List(Event("~2.1.0", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"))),
+          Dependency("worker-farm", List(Event("1.1.0", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"))),
+          Dependency("eslint", List(Event("0.9.2", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"))),
+          Dependency("jest-cli", List(Event("0.2.1", "new", "1424409911", "efae175a8e1b05c976cc5a1cbd492da71eb3bb12"))),
+          Dependency("joi", List(Event("~5.1.0", "new", "1424725895", "00553c6d060ae0c78e90bfceb0f1f971b363199a"))),
+          Dependency("uglify-js", List(Event("~2.4.16", "new", "1425359401", "bb7040808e259dc782403af5debb9ab94deb44f6")))
+        ),
+
+        "react-relay" -> List(
+          Dependency("crc32", List(Event("^0.2.2", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("fbjs", List(Event("0.1.0-alpha.7", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("babel-runtime", List(Event("5.8.20", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("react-static-container", List(Event("^1.0.0-alpha.1", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("react", List(
+            Event("^0.14.0-beta2", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"),
+            Event("^0.14.0-beta3", "updated", "1439398605", "7448d5ce0117a90a55b4632186b8e7efbff093ad"),
+            Event("^0.14.0-beta2", "updated", "1439409180", "c495d68eb67e3848f203db081721681f3854cbd0"),
+            Event("^0.14.0-beta3", "updated", "1439412931", "e729d8024e4ef838d7b26c9971bb00e67f29eae3")
+          )),
+          Dependency("object-assign", List(Event("^3.0.0", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("gulp-derequire", List(Event("^2.1.0", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("gulp-util", List(Event("^3.0.6", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("gulp-header", List(Event("^1.2.2", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("webpack", List(Event("1.11.0", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("webpack-stream", List(Event("^2.1.0", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("gulp-babel", List(Event("^5.1.0", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("gulp-flatten", List(Event("^0.1.0", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("gulp", List(Event("^3.9.0", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("run-sequence", List(Event("^1.1.2", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("envify", List(Event("^3.4.0", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("del", List(Event("^1.2.0", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("babel-loader", List(Event("5.3.2", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("babel-core", List(Event("5.8.21", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("jest-cli", List(Event("^0.4.16", "new", "1439320973", "2a86be3e71cdc6511fa994e3de539f72070da1b4"))),
+          Dependency("babel-relay-plugin", List(Event("^0.1.2", "new", "1439510620", "353b1077c88df81910859fd1996bf83276563336")))
+        )
+
       )
 
       assert(packages.count === 3)

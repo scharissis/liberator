@@ -1,0 +1,27 @@
+{
+  "name": "package.json",
+  "path": "package.json",
+  "sha": "7419eb060c84d8cd5850d0a9409d1857b99e1db4",
+  "size": 1370,
+  "url": "https://api.github.com/repos/facebook/react/contents/package.json?ref=a70d567ec6f6e93acef7b40c536d7af526f8d6a3",
+  "html_url": "https://github.com/facebook/react/blob/a70d567ec6f6e93acef7b40c536d7af526f8d6a3/package.json",
+  "git_url": "https://api.github.com/repos/facebook/react/git/blobs/7419eb060c84d8cd5850d0a9409d1857b99e1db4",
+  "download_url": "https://raw.githubusercontent.com/facebook/react/a70d567ec6f6e93acef7b40c536d7af526f8d6a3/package.json",
+  "type": "file",
+  "content": "ewogICJuYW1lIjogInJlYWN0LXRvb2xzIiwKICAidmVyc2lvbiI6ICIwLjMu\nMiIsCiAgImtleXdvcmRzIjogWwogICAgInJlYWN0IiwKICAgICJqc3giLAog\nICAgInRyYW5zZm9ybWVyIiwKICAgICJ2aWV3IgogIF0sCiAgImhvbWVwYWdl\nIjogImh0dHA6Ly9mYWNlYm9vay5naXRodWIuaW8vcmVhY3QiLAogICJidWdz\nIjogImh0dHBzOi8vZ2l0aHViLmNvbS9mYWNlYm9vay9yZWFjdC9pc3N1ZXMi\nLAogICJsaWNlbnNlcyI6IFsKICAgIHsKICAgICAgInR5cGUiOiAiQXBhY2hl\nLTIuMCIsCiAgICAgICJ1cmwiOiAiaHR0cDovL3d3dy5hcGFjaGUub3JnL2xp\nY2Vuc2VzL0xJQ0VOU0UtMi4wIgogICAgfQogIF0sCiAgImZpbGVzIjogWwog\nICAgIlJFQURNRS5tZCIsCiAgICAibWFpbi5qcyIsCiAgICAiYmluL2pzeCIs\nCiAgICAiYnVpbGQvbW9kdWxlcy8iLAogICAgInZlbmRvci9mYnRyYW5zZm9y\nbS8iLAogICAgInZlbmRvci93b29kY2hpcHBlci5qcyIKICBdLAogICJtYWlu\nIjogIm1haW4uanMiLAogICJiaW4iOiB7CiAgICAianN4IjogIi4vYmluL2pz\neCIKICB9LAogICJyZXBvc2l0b3J5IjogewogICAgInR5cGUiOiAiZ2l0IiwK\nICAgICJ1cmwiOiAiaHR0cHM6Ly9naXRodWIuY29tL2ZhY2Vib29rL3JlYWN0\nIgogIH0sCiAgInNjcmlwdHMiOiB7CiAgICAidGVzdCI6ICJncnVudCB0ZXN0\nIgogIH0sCiAgImRlcGVuZGVuY2llcyI6IHsKICAgICJiYXNlNjIiOiAifjAu\nMS4xIiwKICAgICJjb21tb25lciI6ICJ+MC42LjgiLAogICAgImVzcHJpbWEi\nOiAiZ2l0Oi8vZ2l0aHViLmNvbS9mYWNlYm9vay9lc3ByaW1hI2ZiLWhhcm1v\nbnkiLAogICAgInJlY2FzdCI6ICJ+MC4zLjMiLAogICAgInNvdXJjZS1tYXAi\nOiAifjAuMS4yMiIKICB9LAogICJkZXZEZXBlbmRlbmNpZXMiOiB7CiAgICAi\nYnJvd3NlcmlmeSI6ICJ+Mi4xNC4yIiwKICAgICJ3cmFwdXAiOiAifjAuMTIu\nMCIsCiAgICAiZ3J1bnQtY2xpIjogIn4wLjEuOSIsCiAgICAiZ3J1bnQiOiAi\nfjAuNC4xIiwKICAgICJncnVudC1jb250cmliLWNvcHkiOiAifjAuNC4xIiwK\nICAgICJncnVudC1jb250cmliLWpzaGludCI6ICJ+MC41LjQiLAogICAgIm9w\ndGltaXN0IjogIn4wLjQuMCIsCiAgICAicGhhbnRvbWpzIjogIj49IDEuOS4w\nIiwKICAgICJzZW12ZXIiOiAiPj0gMS4xLjQiLAogICAgInVnbGlmeS1qcyI6\nICJ+Mi4zLjYiLAogICAgImdydW50LWNvbnRyaWItY2xlYW4iOiAifjAuNC4x\nIiwKICAgICJncnVudC1jb21wYXJlLXNpemUiOiAifjAuNC4wIiwKICAgICJn\nemlwLWpzIjogIn4wLjMuMiIsCiAgICAidG1wIjogIn4wLjAuMTgiLAogICAg\nImdydW50LWNvbnRyaWItY29tcHJlc3MiOiAifjAuNS4xIgogIH0sCiAgInBy\nZWZlckdsb2JhbCI6IHRydWUKfQo=\n",
+  "encoding": "base64",
+  "_links": {
+    "self": "https://api.github.com/repos/facebook/react/contents/package.json?ref=a70d567ec6f6e93acef7b40c536d7af526f8d6a3",
+    "git": "https://api.github.com/repos/facebook/react/git/blobs/7419eb060c84d8cd5850d0a9409d1857b99e1db4",
+    "html": "https://github.com/facebook/react/blob/a70d567ec6f6e93acef7b40c536d7af526f8d6a3/package.json"
+  },
+  "meta": {
+    "x-ratelimit-limit": "5000",
+    "x-ratelimit-remaining": "3206",
+    "x-ratelimit-reset": "1420708789",
+    "x-oauth-scopes": "gist, notifications, read:org, read:public_key, read:repo_hook, repo, user",
+    "last-modified": "Sat, 01 Jun 2013 00:10:08 GMT",
+    "etag": "\"04de17788c9416fbe976cc4e9eb974f4\"",
+    "status": "200 OK"
+  }
+}
