@@ -199,6 +199,11 @@ object Reformer {
         )
       }
     }
+    // TODO: Some packages change their name. Till we support this nicely, I'll just pick/use the first name in its commit history.
+    .map{ case (folder_name, package_list) =>
+      (folder_name, package_list.map{ p => PackageJson(package_list.head.name, p.source, p.dependencies)
+      })
+    }
 
     val output = shmoosh(packages)
 
