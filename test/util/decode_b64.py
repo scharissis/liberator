@@ -10,10 +10,15 @@ import sys
 def pretty(d):
 	return json.dumps(d, indent=2)
 
-filename = sys.argv[1]
-data = None
-with open(filename, "r") as f:
-	data = json.load(f)
-content = base64.b64decode(data['content'])
-data['content'] = json.loads(content)
-print(pretty(data))
+def decode(filename, stdout=False):
+	data = None
+	with open(filename, "r") as f:
+		data = json.load(f)
+	content = base64.b64decode(data['content'])
+	data['content'] = json.loads(content)
+	if stdout: print(pretty(data))
+	return data
+
+if __name__ == "__main__":
+	filename = sys.argv[1]
+	decode(filename, stdout=True)
